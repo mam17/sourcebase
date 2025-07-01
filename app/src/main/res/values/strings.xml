@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Source Base</string>
+
+    <string name="txt_english" translatable="false">English</string>
+    <string name="txt_vietnamese" translatable="false">Vietnamese</string>
+    <string name="txt_hindi" translatable="false">Hindi</string>
+    <string name="txt_spanish" translatable="false">Spanish</string>
+    <string name="txt_french" translatable="false">French</string>
+    <string name="txt_portuguese" translatable="false">Portuguese</string>
+    <string name="txt_choose_one">Choose one</string>
+    <string name="this_action_contain_ads">This action contain ads</string>
+    <string name="txt_select">Select</string>
+    <string name="txt_next">Next</string>
+    <string name="txt_get_start">Get Start</string>
+    <string name="txt_permission">Permission</string>
+    <string name="txt_are_you_sure">Are you sure?</string>
+    <string name="txt_exit_app">You want to exit the application?</string>
+    <string name="txt_cancel">Cancel</string>
+    <string name="txt_yes">Yes</string>
+    <string name="txt_loading_cmp">Loading Consent Management Platform</string>
+    <string name="txt_no_network_please_connect">No network, please connect!</string>
+    <string name="txt_try_again">Try Again</string>
+    <string name="txt_loading">Loading</string>
+    <string name="txt_network_connected">Network connected</string>
+    <string name="txt_this_action_contain_ads">This action contain ads</string>
+</resources>

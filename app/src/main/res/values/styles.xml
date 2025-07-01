@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="SwitchTheme" parent="AppTheme">
+        <item name="colorControlActivated">@color/color_main</item>
+    </style>
+
+</resources>
