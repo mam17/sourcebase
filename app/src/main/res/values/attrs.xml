@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="RoundImageView">
+        <attr name="cornerRadius" format="dimension" />
+        <attr name="isOval" format="boolean" />
+        <attr name="bgColor" format="color" />
+        <attr name="enableScaleAnim" format="boolean" />
+        <attr name="iconTint" format="color" />
+    </declare-styleable>
+</resources>

@@ -30,7 +30,6 @@ class OnBoardingActivity : BaseActivity<ActivityOnBoardingBinding>() {
 
     override fun initViews() {
         super.initViews()
-        setFullscreen()
 
         viewModel.loadListOnBoarding()
         viewBinding.apply {

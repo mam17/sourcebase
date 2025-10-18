@@ -28,3 +28,6 @@ render.experimental.xml
 
 # Android Profiling
 *.hprof
+google-services.json
+app/google-services.json
+app/src/debug/google-services.json

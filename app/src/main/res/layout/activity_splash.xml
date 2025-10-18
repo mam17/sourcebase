@@ -34,6 +34,7 @@
         android:paddingEnd="@dimen/size10"
         android:progress="50"
         app:indicatorColor="@color/color_main"
+        app:trackCornerRadius="@dimen/size12"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:trackColor="@color/gray" />
+        app:trackColor="@color/white" />
 </androidx.constraintlayout.widget.ConstraintLayout>

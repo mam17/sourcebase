@@ -41,7 +41,6 @@ class LanguageActivity : BaseActivity<ActivityLanguageBinding>() {
     }
 
     override fun initViews() {
-        setFullscreen()
         viewBinding.apply {
 
             fromSplash = intent.getBooleanExtra(KEY_FROM_SPLASH, false)

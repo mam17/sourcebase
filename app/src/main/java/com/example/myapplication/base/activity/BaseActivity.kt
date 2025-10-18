@@ -1,17 +1,16 @@
 package com.example.myapplication.base.activity
 
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.viewbinding.ViewBinding
@@ -45,24 +44,24 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         isCheckOpenApp = spManager.getFirstOpenApp()
         Log.i("TAG_CHECK_OPEN_APP", "onCreate: $isCheckOpenApp")
-        //language setting
         setupLanguage()
 
-        //viewBinding setting
         viewBinding = provideViewBinding()
         setContentView(viewBinding.root)
 
-        //status bar setting
-        hideSystemUI()
-        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars =
-            true
+        enableEdgeToEdge()
+        ViewCompat.setOnApplyWindowInsetsListener(viewBinding.root) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
-        // Call initialization methods
+        hideNavigationBar()
+
         initViews()
         initData()
         initObserver()
 
-        //Handle Back Button Action
         handleOnBackPressed()
 
     }
@@ -89,6 +88,12 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
     fun replaceFragment(id: Int, fragment: Fragment) {
         supportFragmentManager.commit {
             setReorderingAllowed(true)
+            setCustomAnimations(
+                R.anim.slide_in_right,
+                R.anim.slide_out_left,
+                R.anim.slide_in_left,
+                R.anim.slide_out_right
+            )
             addToBackStack(fragment::class.java.simpleName)
             replace(id, fragment, fragment::class.java.simpleName)
         }
@@ -145,36 +150,25 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
         Toast.makeText(this, mes, duration).show()
     }
 
-    fun setStatusBarColor(colorRes: Int) {
-        val color = ContextCompat.getColor(this, colorRes)
-        window.statusBarColor = color
-        WindowCompat.getInsetsController(window, window.decorView).let { controller ->
-            controller.isAppearanceLightStatusBars = true
-        }
+    fun setStatusBarColor(lightIcons: Boolean) {
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = lightIcons
     }
 
-    fun setFullscreen() {
-        applyFitsSystemWindows(viewBinding.root.rootView, false)
+    fun hideNavigationBar() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.statusBarColor = Color.TRANSPARENT
-        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars =
-            true
-    }
-
-    private fun hideSystemUI() {
-        applyFitsSystemWindows(viewBinding.root.rootView, true)
-        val decorView = window.decorView
-        val uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-        decorView.systemUiVisibility = uiOptions
-    }
-
-    private fun applyFitsSystemWindows(view: View?, fitSystemWindows: Boolean) {
-        if (view is ViewGroup) {
-            ViewCompat.setFitsSystemWindows(view, fitSystemWindows)
-            for (i in 0 until view.childCount) {
-                applyFitsSystemWindows(view.getChildAt(i), fitSystemWindows)
-            }
+        WindowInsetsControllerCompat(window, window.decorView).let { controller ->
+            controller.hide(WindowInsetsCompat.Type.navigationBars())
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
 
+    fun setFullScreen() {
+        ViewCompat.setOnApplyWindowInsetsListener(viewBinding.root) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+    }
 }
