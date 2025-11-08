@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.example.myapplication.utils.NotificationUtil
 
 class NotificationWorker(
     context: Context,
@@ -13,7 +12,7 @@ class NotificationWorker(
 
     override fun doWork(): Result {
         Log.d("NotificationWorker", "Bắt đầu hiển thị notification sau 30 giây")
-        
+
         try {
             NotificationUtil.showFullScreenNotification(applicationContext)
             Log.d("NotificationWorker", "Đã hiển thị notification thành công")
