@@ -3,9 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -37,14 +39,28 @@
         </activity>
         <activity
             android:name=".ui.MainActivity"
-            android:exported="true"/>
+            android:exported="true" />
         <activity
             android:name=".ui.ui.FullScreenActivity"
-            android:exported="false"
-            android:showOnLockScreen="true"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:launchMode="singleInstance"
+            android:screenOrientation="portrait"
             android:showWhenLocked="true"
-            android:turnScreenOn="true"
-            android:theme="@style/Theme.MyApplication.FullScreen" />
+            android:taskAffinity=""
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+            android:turnScreenOn="true" />
+        <receiver
+            android:name=".broadcasts.FullScreenReceiver"
+            android:exported="true" />
+        <receiver
+            android:name=".broadcasts.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

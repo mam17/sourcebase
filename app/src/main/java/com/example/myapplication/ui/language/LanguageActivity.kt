@@ -2,13 +2,7 @@ package com.example.myapplication.ui.language
 
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
-import android.util.Log
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.myapplication.R
 import com.example.myapplication.base.activity.BaseActivity
 import com.example.myapplication.databinding.ActivityLanguageBinding
@@ -18,9 +12,7 @@ import com.example.myapplication.utils.AppEx.setAppLanguage
 import com.example.myapplication.utils.Constant.KEY_FROM_SPLASH
 import com.example.myapplication.utils.ViewEx.gone
 import com.example.myapplication.utils.ViewEx.visible
-import com.facebook.shimmer.ShimmerFrameLayout
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.getValue
 
 @AndroidEntryPoint
 class LanguageActivity : BaseActivity<ActivityLanguageBinding>() {
