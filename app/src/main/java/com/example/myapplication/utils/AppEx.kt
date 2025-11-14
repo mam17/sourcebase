@@ -22,7 +22,7 @@ object AppEx {
     }
 
     fun Context.setAppLanguage(languageCode: String): Context {
-        val locale = Locale(languageCode)
+        val locale = Locale.forLanguageTag(languageCode)
         Locale.setDefault(locale)
         val config = resources.configuration
         config.setLocale(locale)

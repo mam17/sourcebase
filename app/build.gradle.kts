@@ -9,6 +9,8 @@ plugins {
     id("kotlin-parcelize")
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 android {
@@ -37,7 +39,24 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+
+            manifestPlaceholders["ad_app_id"] = "ca-app-pub-3940256099942544~3347511713"
+
+            buildConfigField("String", "inter_splash", "\"ca-app-pub-3940256099942544/1033173712\"")
+            buildConfigField("String", "appopen_resume", "\"ca-app-pub-3940256099942544/9257395921\"")
+            buildConfigField("String", "native_home", "\"ca-app-pub-3940256099942544/2247696110\"")
+            buildConfigField("String", "banner_splash", "\"ca-app-pub-3940256099942544/2014213617\"")
+            buildConfigField("String", "reward_create", "\"ca-app-pub-3940256099942544/5224354917\"")
+
+        }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -47,6 +66,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
     bundle {
         language {
@@ -112,5 +132,21 @@ dependencies {
     
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
+    //AdMob
+    implementation("com.google.android.gms:play-services-ads:24.5.0")
 
+    //UMP
+    implementation("com.google.android.ump:user-messaging-platform:3.2.0")
+
+    //Facebook SDK
+    implementation("com.facebook.android:facebook-android-sdk:18.1.3")
+
+    //Firebase
+    implementation("com.google.firebase:firebase-config-ktx:22.1.2")
+    implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
+    implementation("com.google.firebase:firebase-crashlytics-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+
+    //Lottie load gif
+    implementation("com.airbnb.android:lottie:6.6.7")
 }

@@ -23,4 +23,7 @@
     <string name="txt_loading">Loading</string>
     <string name="txt_network_connected">Network connected</string>
     <string name="txt_this_action_contain_ads">This action contain ads</string>
+    <string name="txt_network_error">Network error</string>
+    <string name="txt_network_error_message">No network connection, please try again!</string>
+    <string name="txt_ads_loading">Ads Loading...</string>
 </resources>

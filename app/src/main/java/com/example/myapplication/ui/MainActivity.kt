@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -17,6 +18,9 @@ import com.example.myapplication.databinding.ActivityMainBinding
 import com.example.myapplication.utils.NotificationUtil
 import com.example.myapplication.utils.NotificationUtil.scheduleFullScreenNotificationAfterExit
 import com.example.myapplication.utils.NotificationUtil.scheduleFullScreenNotificationDiary
+import com.example.myapplication.utils.ads.AdsManager
+import com.example.myapplication.utils.ads.interfaces.AdLoadCallback
+import com.example.myapplication.utils.ads.interfaces.AdShowCallback
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
 
@@ -35,14 +39,16 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         NotificationUtil.createNotificationChannel(this)
+        initInterAds()
 
         viewBinding.btnPermission.setOnClickListener {
-            ensureAndShowFullScreenNotification()
-            Handler(mainLooper).postDelayed({
-                scheduleFullScreenNotificationAfterExit(this)
-                scheduleFullScreenNotificationDiary(this)
-                finishAffinity()
-            }, 2000)
+            showInterAds()
+//            ensureAndShowFullScreenNotification()
+//            Handler(mainLooper).postDelayed({
+//                scheduleFullScreenNotificationAfterExit(this)
+//                scheduleFullScreenNotificationDiary(this)
+//                finishAffinity()
+//            }, 2000)
         }
     }
 
@@ -104,5 +110,32 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 Toast.LENGTH_LONG
             ).show()
         }
+    }
+
+    private fun initInterAds() {
+        AdsManager.loadInterstitial(this, null, object : AdLoadCallback {
+            override fun onAdLoaded() {
+                Log.d("TAG_MainActivity", "✅ Interstitial loaded, now showing...")
+
+                // Show interstitial
+
+            }
+
+            override fun onAdFailed(error: com.google.android.gms.ads.LoadAdError) {
+                Log.e("TAG_MainActivity", "❌ Failed to load interstitial: ${error.message}")
+            }
+        })
+    }
+
+    fun showInterAds(){
+        AdsManager.showInterstitial(this@MainActivity, object : AdShowCallback {
+            override fun onAdShown() {
+                Log.d("TAG_MainActivity", "📢 Interstitial is shown.")
+            }
+
+            override fun onAdFailedToShow() {
+                Log.e("TAG_MainActivity", "❌ Failed to show interstitial.")
+            }
+        })
     }
 }
