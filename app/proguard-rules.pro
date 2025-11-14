@@ -19,3 +19,25 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Hilt
+-keep class com.example.myapplication.App { *; }
+-keepclasseswithmembers class * {
+    @javax.inject.* *;
+}
+
+-keepclassmembers class * {
+    @javax.inject.Inject <fields>;
+}
+
+# Google Ads
+-keep public class com.google.android.gms.ads.** {
+   public *;
+}
+
+-keep public class com.google.ads.** {
+   public *;
+}
+
+-keep class com.google.android.gms.** { *; }
+-keep class com.google.ads.** { *; }

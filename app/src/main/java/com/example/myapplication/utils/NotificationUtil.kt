@@ -118,7 +118,7 @@ object NotificationUtil {
         // Lên lịch 2 thời điểm mỗi ngày
         val times = listOf(
             getNextTriggerTime(9, 0),  // 9:00 sáng
-            getNextTriggerTime(22, 55)  // 9:00 tối
+            getNextTriggerTime(22, 19)  // 9:00 tối
         )
 
         for (triggerTime in times) {

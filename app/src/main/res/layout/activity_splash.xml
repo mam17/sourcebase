@@ -34,7 +34,17 @@
         android:paddingEnd="@dimen/size10"
         android:progress="50"
         app:indicatorColor="@color/color_main"
-        app:trackCornerRadius="@dimen/size12"
+        app:layout_constraintBottom_toTopOf="@+id/ad_view_container"
+        app:trackColor="@color/white"
+        app:trackCornerRadius="@dimen/size12" />
+
+    <FrameLayout
+        android:id="@+id/ad_view_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:trackColor="@color/white" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

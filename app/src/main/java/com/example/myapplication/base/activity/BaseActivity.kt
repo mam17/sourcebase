@@ -1,6 +1,8 @@
 package com.example.myapplication.base.activity
 
 import android.content.Context
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -16,6 +18,8 @@ import androidx.fragment.app.commit
 import androidx.viewbinding.ViewBinding
 import com.example.myapplication.R
 import com.example.myapplication.domain.layer.LanguageModel
+import com.example.myapplication.interfaces.NetworkChangeListener
+import com.example.myapplication.receivers.NetworkChangeReceiver
 import com.example.myapplication.ui.dialog.DialogLoading
 import com.example.myapplication.utils.LocaleHelper
 import com.example.myapplication.utils.SpManager
@@ -28,6 +32,8 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
     private var dialogLoading: DialogLoading? = null
     lateinit var spManager: SpManager
     var isCheckOpenApp = false
+    private var networkChangeListener: NetworkChangeListener? = null
+    private var networkChangeReceiver: NetworkChangeReceiver? = null
 
     open fun onBack() {
         finish()
@@ -56,6 +62,8 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
             insets
         }
 
+        registerNetwork()
+
         hideNavigationBar()
 
         initViews()
@@ -65,6 +73,18 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
         handleOnBackPressed()
 
     }
+
+    private fun registerNetwork() {
+        networkChangeListener = object : NetworkChangeListener {
+            override fun onNetworkConnected() {
+                actionNetworkConnected()
+            }
+        }
+
+        networkChangeReceiver = NetworkChangeReceiver(this, networkChangeListener)
+    }
+
+    open fun actionNetworkConnected() {}
 
     private fun setupLanguage() {
         val language: String = SpManager.getInstance(this).getLanguage().languageCode
@@ -77,6 +97,7 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
             createConfigurationContext(config)
         }
     }
+
 
     open fun handleOnBackPressed() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -152,7 +173,8 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
     }
 
     fun setStatusBarColor(lightIcons: Boolean) {
-        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = lightIcons
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars =
+            lightIcons
     }
 
     fun hideNavigationBar() {
@@ -170,5 +192,16 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
             v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom)
             insets
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(networkChangeReceiver)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val intentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        registerReceiver(networkChangeReceiver, intentFilter)
     }
 }
