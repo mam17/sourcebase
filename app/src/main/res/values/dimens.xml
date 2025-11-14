@@ -740,4 +740,29 @@
 
     <dimen name="size99">99dp</dimen>
 
+    <dimen name="card_elevation">2.8444dp</dimen>
+
+    <dimen name="text_size_20">@dimen/size20</dimen>
+
+    <dimen name="text_size_19">@dimen/size19</dimen>
+
+    <dimen name="text_size_18">@dimen/size18</dimen>
+
+    <dimen name="text_size_17">@dimen/size17</dimen>
+
+    <dimen name="text_size_16">@dimen/size16</dimen>
+
+    <dimen name="text_size_15">@dimen/size15</dimen>
+
+    <dimen name="text_size_14">@dimen/size14</dimen>
+
+    <dimen name="text_size_13">@dimen/size13</dimen>
+
+    <dimen name="text_size_12">@dimen/size12</dimen>
+
+    <dimen name="text_size_11">@dimen/size11</dimen>
+
+    <dimen name="text_size_10">@dimen/size10</dimen>
+
+    <dimen name="text_size_9">@dimen/size9</dimen>
 </resources>
