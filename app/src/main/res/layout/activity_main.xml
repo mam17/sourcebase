@@ -1,14 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center"
+    android:background="@color/gray"
+    android:orientation="vertical"
     android:paddingTop="?attr/actionBarSize">
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnPermission"
+        android:id="@+id/btnReward"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="Permission" />
-</RelativeLayout>
+        android:text="Reward" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnInterSplash"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="Inter" />
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/fl_adplaceholder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <include
+            android:id="@+id/native_ad_view"
+            layout="@layout/layout_native_ad_type1" />
+
+    </com.facebook.shimmer.ShimmerFrameLayout>
+</LinearLayout>

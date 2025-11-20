@@ -2,87 +2,147 @@ package com.example.myapplication.utils.ads.admods
 
 import android.app.Activity
 import android.content.Context
+import android.os.Bundle
 import android.util.Log
-import android.view.ViewGroup
-import android.widget.FrameLayout
+import android.view.View
 import com.example.myapplication.utils.ads.base.BaseAds
-import com.example.myapplication.utils.ads.interfaces.AdLoadCallback
-import com.example.myapplication.utils.ads.interfaces.AdShowCallback
-import com.google.android.gms.ads.*
-import java.util.Date
+import com.example.myapplication.utils.ads.helper.CollapsiblePositionType
+import com.facebook.appevents.AppEventsLogger
+import com.facebook.shimmer.ShimmerFrameLayout
+import com.google.ads.mediation.admob.AdMobAdapter
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.LoadAdError
+import java.math.BigDecimal
+import java.util.Currency
 
-class BannerAds : BaseAds<AdView>() {
+class BannerAds(
+    context: Context,
+    private val collapsiblePositionType: CollapsiblePositionType
+) : BaseAds(context) {
 
     companion object {
-        private const val TAG = "TAG_BannerAds"
+        private const val TAG = "tag_bannerAdmob"
     }
 
     private var adView: AdView? = null
 
-    override fun loadAd(
-        context: Context,
-        idAdUnit: String?,
-        callback: AdLoadCallback?
-    ) {
-        if (isLoadingAd) {
-            Log.d(TAG, "Banner is already loading.")
-            return
-        }
-
-        isLoadingAd = true
-        val unitId = idAdUnit ?: TEST_BANNER
-        val adRequest = AdRequest.Builder().build()
-
-        // Tạo AdView mới mỗi lần load để tránh lỗi “val cannot be reassigned”
-        adView = AdView(context).apply {
-            setAdSize(AdSize.BANNER)
-            adUnitId = unitId // chỉ gán 1 lần ở đây
-        }
-
-        // Gắn listener sau khi tạo AdView
-        adView?.adListener = object : AdListener() {
-            override fun onAdLoaded() {
-                Log.d(TAG, "✅ Banner loaded successfully.")
-                adObject = adView
-                loadTime = Date()
-                isLoadingAd = false
-                callback?.onAdLoaded()
-            }
-
-            override fun onAdFailedToLoad(error: LoadAdError) {
-                Log.e(TAG, "❌ Failed to load banner: ${error.message}")
-                destroy()
-                isLoadingAd = false
-                callback?.onAdFailed(error)
-            }
-        }
-
-        adView?.loadAd(adRequest)
-    }
-
-    override fun showAd(
+    fun showBanner(
         activity: Activity,
-        container: FrameLayout?,
-        callback: AdShowCallback?
+        id: String,
+        parent: ShimmerFrameLayout
     ) {
-        val banner = adObject ?: run {
-            Log.w(TAG, "⚠️ Banner not loaded yet.")
-            callback?.onAdFailedToShow()
-            return
+        Log.i(TAG, "showBanner: $id")
+
+        val adSize = getAdSize(activity, parent)
+        adView = AdView(activity).apply {
+            setAdSize(adSize)
+            adUnitId = id
+
+            adListener = object : AdListener() {
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    Log.i(TAG, "onAdFailedToLoad: ${loadAdError.message}")
+                    parent.removeAllViews()
+                }
+
+                override fun onAdLoaded() {
+                    Log.i(TAG, "onAdLoaded")
+                    parent.removeAllViews()
+                    parent.addView(this@apply)
+                    parent.hideShimmer()
+
+                    setOnPaidEventListener { adValue ->
+                        val revenue = adValue.valueMicros / 1_000_000.0
+                        if (revenue > 0) {
+                            AppEventsLogger.newLogger(context).logPurchase(
+                                BigDecimal.valueOf(revenue),
+                                Currency.getInstance("USD")
+                            )
+                        }
+                    }
+                }
+            }
         }
 
-        (banner.parent as? ViewGroup)?.removeView(banner)
-        container?.removeAllViews()
-        container?.addView(banner)
+        val bundle = Bundle()
 
-        callback?.onAdShown()
-        Log.d(TAG, "📢 Banner shown in container.")
+        when (collapsiblePositionType) {
+            CollapsiblePositionType.NONE -> {}
+            CollapsiblePositionType.TOP -> {
+                bundle.putString("collapsible", "top")
+                adRequestBuilder.addNetworkExtrasBundle(AdMobAdapter::class.java, bundle)
+            }
+
+            CollapsiblePositionType.BOTTOM -> {
+                bundle.putString("collapsible", "bottom")
+                adRequestBuilder.addNetworkExtrasBundle(AdMobAdapter::class.java, bundle)
+            }
+        }
+
+        adView?.loadAd(adRequestBuilder.build())
     }
 
-    override fun destroy() {
-        super.destroy()
+    fun showBannerWithFallback(
+        activity: Activity,
+        primaryAdUnitId: String,
+        secondaryAdUnitId: String,
+        parent: ShimmerFrameLayout
+    ) {
+        Log.i(TAG, "Loading secondary/floor ad first: $secondaryAdUnitId")
+
+        val adSize = getAdSize(activity, parent)
+
+        adView = AdView(activity).apply {
+            setAdSize(adSize)
+            adUnitId = secondaryAdUnitId
+
+            adListener = object : AdListener() {
+                override fun onAdLoaded() {
+                    Log.i(TAG, "Secondary ad loaded successfully")
+                    parent.removeAllViews()
+                    parent.addView(this@apply)
+                    parent.hideShimmer()
+                }
+
+                override fun onAdFailedToLoad(error: LoadAdError) {
+                    Log.i(TAG, "Secondary ad failed, fallback to primary: $primaryAdUnitId")
+                    showBanner(activity, primaryAdUnitId, parent)
+                }
+            }
+        }
+
+        // Load secondary
+        adView?.loadAd(adRequestBuilder.build())
+    }
+
+
+    fun getAdSize(activity: Activity, container: View): AdSize {
+        val displayMetrics = activity.resources.displayMetrics
+        val density = displayMetrics.density
+        var adWidthPixels = container.width.toFloat()
+
+        if (adWidthPixels == 0f) {
+            adWidthPixels = displayMetrics.widthPixels.toFloat()
+        }
+
+        val adWidth = (adWidthPixels / density).toInt()
+        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity, adWidth)
+    }
+
+    fun onResume() {
+        adView?.resume()
+    }
+
+    fun onPause() {
+        adView?.pause()
+    }
+
+    fun onDestroy() {
         adView?.destroy()
-        adView = null
+    }
+
+    fun reload() {
+        adView?.loadAd(adRequestBuilder.build())
     }
 }
-
