@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/color_main"
     tools:context=".ui.splash.SplashActivity">
 
     <TextView
@@ -38,13 +39,22 @@
         app:trackColor="@color/white"
         app:trackCornerRadius="@dimen/size12" />
 
-    <FrameLayout
+    <include
         android:id="@+id/ad_view_container"
-        android:layout_width="0dp"
+        layout="@layout/layout_banner_ads" />
+
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/fl_adplaceholder"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-    </FrameLayout>
+        <include
+            android:id="@+id/native_ad_view"
+            layout="@layout/layout_native_ad_type1" />
+
+    </com.facebook.shimmer.ShimmerFrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

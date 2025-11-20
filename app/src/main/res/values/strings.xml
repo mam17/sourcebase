@@ -26,4 +26,5 @@
     <string name="txt_network_error">Network error</string>
     <string name="txt_network_error_message">No network connection, please try again!</string>
     <string name="txt_ads_loading">Ads Loading...</string>
+    <string name="txt_loading_ads">Loading ads...</string>
 </resources>

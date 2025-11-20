@@ -6,16 +6,21 @@ import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.example.myapplication.libads.consent.GoogleMobileAdsConsentManager
 import com.example.myapplication.utils.AppEx.setAppLanguage
+import com.example.myapplication.utils.Constant
 import com.example.myapplication.utils.LocaleHelper
 import com.example.myapplication.utils.SpManager
+import com.example.myapplication.utils.ads.adsutils.AppOpenAdsUtil
+import com.example.myapplication.utils.ads.base.BaseAds.Companion.md5
 import com.google.android.ump.FormError
 import dagger.hilt.android.HiltAndroidApp
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -25,6 +30,7 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
     lateinit var spManager: SpManager
     private var currentActivity: Activity? = null
 
+    private lateinit var openResumeAds: AppOpenAdsUtil
     companion object {
         @SuppressLint("StaticFieldLeak")
         var context: Context? = null
@@ -34,10 +40,18 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
 
         val instance: App?
             get() = mInstance
+
+        var isInterstitialShowing = false
+        var isRewardedShowing = false
+        var isAppOpenShowing = false
+
+        fun isAnyAdShowing(): Boolean {
+            return isInterstitialShowing || isRewardedShowing || isAppOpenShowing
+        }
     }
 
     override fun onCreate() {
-        super<Application>.onCreate() // Sửa: bỏ <Application>
+        super<Application>.onCreate()
         context = applicationContext
         mInstance = this
 
@@ -46,37 +60,42 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
         registerActivityLifecycleCallbacks(this)
     }
 
-    fun initConsentManager(activity: Activity) {
-        // Đảm bảo spManager đã được inject
-        if (!::spManager.isInitialized) {
-            Log.e("Consent", "spManager not initialized")
-            return
-        }
-
+    fun initConsentManager(
+        activity: Activity,
+        testDeviceIds: List<String> = emptyList(),
+        onConsentComplete: () -> Unit
+    ) {
         val consentManager = GoogleMobileAdsConsentManager.getInstance(this)
+        val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+        val hashedId = md5(androidId).uppercase(Locale.getDefault())
+        Log.i("TAG_Consent", "hashedId: $hashedId")
+        val ids = testDeviceIds.ifEmpty { listOf("hashedId") }
 
-        if (!spManager.getBoolean("consent_requested", false)
-            || consentManager.isPrivacyOptionsRequired()
-        ) {
-            consentManager.gatherConsent(
-                activity,
-                testDeviceIds = listOf("TEST_DEVICE_HASHED_ID"),
-                onComplete = object : GoogleMobileAdsConsentManager.OnConsentGatheringCompleteListener {
-                    override fun onConsentGatheringComplete(formError: FormError?) {
-                        if (formError != null) {
-                            Log.w("Consent", "Form error: ${formError.message}")
-                        }
-                        spManager.putBoolean("consent_requested", true)
-
-                        Log.d(
-                            "Consent",
-                            "Consent complete. Can request ads: ${consentManager.canRequestAds()}"
-                        )
-                    }
+        consentManager.gatherConsent(activity, ids, object :
+            GoogleMobileAdsConsentManager.OnConsentGatheringCompleteListener {
+            override fun onConsentGatheringComplete(formError: FormError?) {
+                if (formError != null) {
+                    Log.w("TAG_Consent", "Consent form error: ${formError.message}")
+                } else {
+                    Log.d("TAG_Consent", "Consent complete. Can request ads: ${consentManager.canRequestAds()}")
+                    val granted = consentManager.canRequestAds()
+                    spManager.putBoolean(Constant.KEY_SP_UMP_SHOWED, granted)
                 }
+                onConsentComplete()
+            }
+        })
+    }
+
+    fun loadAdsOpenResume(){
+        currentActivity?.let { activity ->
+            openResumeAds = AppOpenAdsUtil(
+                idAds = BuildConfig.appopen_resume,
+                idAds2 = null,
+                adPlacement = "open_resume",
+                isEnable = true,
+                checkOtherAdsShowing = { isAnyAdShowing() }
             )
-        } else {
-            Log.d("Consent", "Consent already gathered before.")
+            openResumeAds.load(activity)
         }
     }
 
@@ -104,6 +123,9 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
     override fun onStart(owner: LifecycleOwner) {
         super.onStart(owner)
         Log.i("TAG_APP", "onStart: $currentActivity")
+        if (::openResumeAds.isInitialized && !isAnyAdShowing()) {
+            currentActivity?.let { openResumeAds.showIfAvailable(it) }
+        }
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
@@ -117,6 +139,7 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
 
     override fun onActivityResumed(activity: Activity) {
         Log.d("TAG_APP", "onActivityResumed: ${activity::class.java.simpleName}")
+
     }
 
     override fun onActivityPaused(activity: Activity) {
@@ -133,8 +156,5 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
 
     override fun onActivityDestroyed(activity: Activity) {
         Log.d("TAG_APP", "onActivityDestroyed: ${activity::class.java.simpleName}")
-        if (currentActivity == activity) {
-            currentActivity = null
-        }
     }
 }

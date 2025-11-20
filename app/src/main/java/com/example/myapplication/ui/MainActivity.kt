@@ -1,26 +1,20 @@
 package com.example.myapplication.ui
 
-import android.Manifest
 import android.app.Activity
-import android.app.NotificationManager
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.provider.Settings
 import android.util.Log
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+import com.example.myapplication.App
+import com.example.myapplication.BuildConfig
 import com.example.myapplication.base.activity.BaseActivity
 import com.example.myapplication.databinding.ActivityMainBinding
+import com.example.myapplication.ui.language.LanguageActivity
 import com.example.myapplication.utils.NotificationUtil
-import com.example.myapplication.utils.NotificationUtil.scheduleFullScreenNotificationAfterExit
-import com.example.myapplication.utils.NotificationUtil.scheduleFullScreenNotificationDiary
-import com.example.myapplication.utils.ads.AdsManager
-import com.example.myapplication.utils.ads.interfaces.AdLoadCallback
-import com.example.myapplication.utils.ads.interfaces.AdShowCallback
+import com.example.myapplication.utils.ads.adsutils.InterstitialAdsUtil
+import com.example.myapplication.utils.ads.adsutils.NativeAdsUtil
+import com.example.myapplication.utils.ads.adsutils.RewardedAdsUtil
+import com.example.myapplication.utils.ads.interfaces.OnAdmobLoadListener
+import com.example.myapplication.utils.ads.interfaces.OnAdmobShowListener
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
 
@@ -36,106 +30,104 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }
     }
 
+    private val rewardedAd by lazy {
+        RewardedAdsUtil(
+            context = this,
+            idAds = BuildConfig.reward_create,
+            adPlacement = "reward_main",
+            isEnable = true
+        )
+    }
+    private val interSplash by lazy {
+        InterstitialAdsUtil(
+            context = this,
+            idAds = BuildConfig.inter_splash,
+            idAds2f = BuildConfig.inter_splash,
+            adPlacement = "inter_splash",
+            isEnable = true
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         NotificationUtil.createNotificationChannel(this)
-        initInterAds()
 
-        viewBinding.btnPermission.setOnClickListener {
-            showInterAds()
-//            ensureAndShowFullScreenNotification()
-//            Handler(mainLooper).postDelayed({
-//                scheduleFullScreenNotificationAfterExit(this)
-//                scheduleFullScreenNotificationDiary(this)
-//                finishAffinity()
-//            }, 2000)
+        App.instance?.loadAdsOpenResume()
+
+        NativeAdsUtil.loadNativeHome()
+        showNativeHome()
+
+
+        viewBinding.btnInterSplash.setOnClickListener {
+            showInterAdsSplash()
+        }
+
+
+        viewBinding.btnReward.setOnClickListener {
+            showRewardAds()
         }
     }
 
-    // 👉 Hàm bạn hỏi: xin quyền notification nếu cần, rồi gọi callback
-    private fun requestNotificationPermissionsIfNeeded(onGranted: () -> Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    this, Manifest.permission.POST_NOTIFICATIONS
-                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-            ) {
-                onGranted()
-            } else {
-                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                pendingAfterPermissionGranted = onGranted
+    fun loadRewardMain() {
+        rewardedAd.load(object : OnAdmobLoadListener {
+            override fun onLoad() {
+                Log.d("tag_ADS", "Rewarded loaded")
             }
-        } else {
-            onGranted()
-        }
+
+            override fun onError(e: String) {
+                Log.d("tag_ADS", "Rewarded load error: $e")
+            }
+        })
     }
 
-    // 👉 Hàm kiểm tra / xin quyền Full Screen Intent
-    private fun ensureAndShowFullScreenNotification() {
-        requestNotificationPermissionsIfNeeded {
-            if (Build.VERSION.SDK_INT >= 34) {
-                val nm = getSystemService(NotificationManager::class.java)
-                if (nm != null && !nm.canUseFullScreenIntent()) {
-                    openManageAppUseFullScreenIntentSettings()
-                } else {
-                    NotificationUtil.showFullScreenNotification(this)
+    fun loadInterMain() {
+        interSplash.load(object : OnAdmobLoadListener {
+            override fun onLoad() {
+                Log.d("tag_ADS", "Splash inter loaded")
+            }
+
+            override fun onError(e: String) {
+                Log.d("tag_ADS", "Splash inter load error: $e")
+            }
+        })
+    }
+
+    fun showRewardAds() {
+        if (rewardedAd.isLoaded()) {
+            rewardedAd.show(this, object : OnAdmobShowListener {
+                override fun onShow() {
+                    Log.d("tag_ADS", "Rewarded showed")
                 }
-            } else {
-                NotificationUtil.showFullScreenNotification(this)
-            }
-        }
-    }
 
-    private fun openManageAppUseFullScreenIntentSettings() {
-        if (Build.VERSION.SDK_INT >= 34) {
-            val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
-                data = Uri.parse("package:$packageName")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            startActivity(intent)
-        }
-    }
-
-    // Launchers
-    private var pendingAfterPermissionGranted: (() -> Unit)? = null
-
-    private val notificationPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) {
-            pendingAfterPermissionGranted?.invoke()
+                override fun onError(e: String) {
+                    Log.d("tag_ADS", "Show rewarded error: $e")
+                }
+            })
         } else {
-            Toast.makeText(
-                this,
-                "Ứng dụng cần quyền thông báo để hiển thị cảnh báo toàn màn hình!",
-                Toast.LENGTH_LONG
-            ).show()
+            Log.d("tag_ADS", "Rewarded ad not loaded yet")
         }
     }
 
-    private fun initInterAds() {
-        AdsManager.loadInterstitial(this, null, object : AdLoadCallback {
-            override fun onAdLoaded() {
-                Log.d("TAG_MainActivity", "✅ Interstitial loaded, now showing...")
-
-                // Show interstitial
-
+    fun showInterAdsSplash() {
+        interSplash.show(this, object : OnAdmobShowListener {
+            override fun onShow() {
+                Log.d("tag_ADS", "splash inter showed")
+                LanguageActivity.start(this@MainActivity, false)
             }
 
-            override fun onAdFailed(error: com.google.android.gms.ads.LoadAdError) {
-                Log.e("TAG_MainActivity", "❌ Failed to load interstitial: ${error.message}")
+            override fun onError(e: String) {
+                Log.d("tag_ADS", "Show error splash: $e")
             }
         })
     }
 
-    fun showInterAds(){
-        AdsManager.showInterstitial(this@MainActivity, object : AdShowCallback {
-            override fun onAdShown() {
-                Log.d("TAG_MainActivity", "📢 Interstitial is shown.")
+    private fun showNativeHome() {
+        NativeAdsUtil.homeNativeAdmob?.run {
+            getNativeAdLive().observe(this@MainActivity) {
+                if (available()) {
+                    this.showNative(viewBinding.flAdplaceholder, null)
+                }
             }
-
-            override fun onAdFailedToShow() {
-                Log.e("TAG_MainActivity", "❌ Failed to show interstitial.")
-            }
-        })
+        }
     }
 }

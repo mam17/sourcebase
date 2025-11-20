@@ -49,6 +49,7 @@ android {
             manifestPlaceholders["ad_app_id"] = "ca-app-pub-3940256099942544~3347511713"
 
             buildConfigField("String", "inter_splash", "\"ca-app-pub-3940256099942544/1033173712\"")
+            buildConfigField("String", "inter_main", "\"ca-app-pub-3940256099942544/1033173712\"")
             buildConfigField("String", "appopen_resume", "\"ca-app-pub-3940256099942544/9257395921\"")
             buildConfigField("String", "native_home", "\"ca-app-pub-3940256099942544/2247696110\"")
             buildConfigField("String", "banner_splash", "\"ca-app-pub-3940256099942544/2014213617\"")
