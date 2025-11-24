@@ -11,6 +11,7 @@ class InterstitialAdsUtil(
     private val context: Context,
     private val idAds: String,
     private val idAds2f: String? = null,
+    private val idAdsPlace: String? = null,
     private val isEnable: Boolean
 ) {
 
@@ -33,7 +34,7 @@ class InterstitialAdsUtil(
     }
 
     private fun loadInternal(adUnitId: String, onFail: (() -> Unit)? = null) {
-        adsController = InterstitialAds(context, adUnitId)
+        adsController = idAdsPlace?.let { InterstitialAds(context, adUnitId,it) }
 
         adsController?.load(object : OnAdmobLoadListener {
             override fun onLoad() {

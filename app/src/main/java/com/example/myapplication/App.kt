@@ -18,6 +18,7 @@ import com.example.myapplication.utils.LocaleHelper
 import com.example.myapplication.utils.SpManager
 import com.example.myapplication.utils.ads.AppOpenAdsUtil
 import com.example.myapplication.libads.base.BaseAds.Companion.md5
+import com.example.myapplication.libads.event.MMPManager
 import com.google.android.ump.FormError
 import dagger.hilt.android.HiltAndroidApp
 import java.util.Locale
@@ -58,6 +59,15 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
         // Thêm lifecycle observer
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         registerActivityLifecycleCallbacks(this)
+
+        MMPManager.initialize(
+            application = this,
+            appToken = "2fm9gkqubvpc", // Token test
+            isDebug = BuildConfig.DEBUG
+        )
+
+        // Thêm global parameters
+        MMPManager.addGlobalCallbackParameter("app_version", BuildConfig.VERSION_NAME)
     }
 
     @SuppressLint("HardwareIds")
