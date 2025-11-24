@@ -1,9 +1,9 @@
-package com.example.myapplication.utils.ads.adsutils
+package com.example.myapplication.utils.ads
 
 import android.annotation.SuppressLint
 import com.example.myapplication.App
 import com.example.myapplication.BuildConfig
-import com.example.myapplication.utils.ads.admods.NativeAds
+import com.example.myapplication.libads.admods.NativeAds
 
 object NativeAdsUtil {
     @SuppressLint("StaticFieldLeak")

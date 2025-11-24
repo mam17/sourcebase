@@ -1,4 +1,4 @@
-package com.example.myapplication.utils.ads.admods
+package com.example.myapplication.libads.admods
 
 import android.content.Context
 import android.os.Handler
@@ -10,7 +10,7 @@ import android.widget.RatingBar
 import android.widget.TextView
 import androidx.lifecycle.MutableLiveData
 import com.example.myapplication.BuildConfig
-import com.example.myapplication.utils.ads.base.BaseAds
+import com.example.myapplication.libads.base.BaseAds
 import com.facebook.appevents.AppEventsLogger
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.gms.ads.*
@@ -18,8 +18,8 @@ import com.google.android.gms.ads.nativead.*
 import java.math.BigDecimal
 import java.util.*
 import com.example.myapplication.R
-import com.example.myapplication.utils.ads.interfaces.OnAdmobLoadListener
-import com.example.myapplication.utils.ads.interfaces.OnAdmobShowListener
+import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
+import com.example.myapplication.libads.interfaces.OnAdmobShowListener
 
 class NativeAds(
     context: Context,

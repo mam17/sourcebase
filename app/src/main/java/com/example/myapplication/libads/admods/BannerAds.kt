@@ -1,12 +1,12 @@
-package com.example.myapplication.utils.ads.admods
+package com.example.myapplication.libads.admods
 
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import com.example.myapplication.utils.ads.base.BaseAds
-import com.example.myapplication.utils.ads.helper.CollapsiblePositionType
+import com.example.myapplication.libads.base.BaseAds
+import com.example.myapplication.libads.helper.CollapsiblePositionType
 import com.facebook.appevents.AppEventsLogger
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.ads.mediation.admob.AdMobAdapter
