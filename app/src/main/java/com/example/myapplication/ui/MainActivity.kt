@@ -40,6 +40,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             context = this,
             idAds = BuildConfig.inter_splash,
             idAds2f = BuildConfig.inter_splash,
+            idAdsPlace = "inter_splash",
             isEnable = true
         )
     }
