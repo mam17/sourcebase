@@ -1,16 +1,9 @@
-package com.example.myapplication.utils.ads.adsutils
+package com.example.myapplication.utils.ads
 
 import android.app.Activity
-import android.app.Dialog
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
-import android.view.Gravity
-import android.view.WindowManager
-import com.example.myapplication.R
-import com.example.myapplication.utils.ads.admods.AppOpenAds
-import com.example.myapplication.utils.ads.interfaces.OnAdmobLoadListener
-import com.example.myapplication.utils.ads.base.BaseAds
+import com.example.myapplication.libads.admods.AppOpenAds
+import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
 
 class AppOpenAdsUtil(
     private val idAds: String,

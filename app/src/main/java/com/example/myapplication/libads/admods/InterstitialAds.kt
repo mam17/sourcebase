@@ -1,4 +1,4 @@
-package com.example.myapplication.utils.ads.admods
+package com.example.myapplication.libads.admods
 
 import android.app.Activity
 import android.app.Dialog
@@ -9,9 +9,9 @@ import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
 import com.example.myapplication.R
-import com.example.myapplication.utils.ads.base.BaseAds
-import com.example.myapplication.utils.ads.interfaces.OnAdmobLoadListener
-import com.example.myapplication.utils.ads.interfaces.OnAdmobShowListener
+import com.example.myapplication.libads.base.BaseAds
+import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
+import com.example.myapplication.libads.interfaces.OnAdmobShowListener
 import com.facebook.appevents.AppEventsLogger
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.FullScreenContentCallback

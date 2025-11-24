@@ -10,11 +10,9 @@ import com.example.myapplication.base.activity.BaseActivity
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.example.myapplication.ui.language.LanguageActivity
 import com.example.myapplication.utils.NotificationUtil
-import com.example.myapplication.utils.ads.adsutils.InterstitialAdsUtil
-import com.example.myapplication.utils.ads.adsutils.NativeAdsUtil
-import com.example.myapplication.utils.ads.adsutils.RewardedAdsUtil
-import com.example.myapplication.utils.ads.interfaces.OnAdmobLoadListener
-import com.example.myapplication.utils.ads.interfaces.OnAdmobShowListener
+import com.example.myapplication.utils.ads.InterstitialAdsUtil
+import com.example.myapplication.utils.ads.NativeAdsUtil
+import com.example.myapplication.utils.ads.RewardedAdsUtil
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
 
@@ -34,7 +32,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         RewardedAdsUtil(
             context = this,
             idAds = BuildConfig.reward_create,
-            adPlacement = "reward_main",
             isEnable = true
         )
     }
@@ -43,7 +40,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             context = this,
             idAds = BuildConfig.inter_splash,
             idAds2f = BuildConfig.inter_splash,
-            adPlacement = "inter_splash",
             isEnable = true
         )
     }
@@ -56,7 +52,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
         NativeAdsUtil.loadNativeHome()
         showNativeHome()
-
+        loadRewardMain()
+        loadInterMain()
 
         viewBinding.btnInterSplash.setOnClickListener {
             showInterAdsSplash()
@@ -69,55 +66,32 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     }
 
     fun loadRewardMain() {
-        rewardedAd.load(object : OnAdmobLoadListener {
-            override fun onLoad() {
-                Log.d("tag_ADS", "Rewarded loaded")
-            }
-
-            override fun onError(e: String) {
-                Log.d("tag_ADS", "Rewarded load error: $e")
-            }
-        })
+        rewardedAd.load()
     }
 
     fun loadInterMain() {
-        interSplash.load(object : OnAdmobLoadListener {
-            override fun onLoad() {
-                Log.d("tag_ADS", "Splash inter loaded")
-            }
-
-            override fun onError(e: String) {
-                Log.d("tag_ADS", "Splash inter load error: $e")
-            }
-        })
+        interSplash.load()
     }
 
     fun showRewardAds() {
         if (rewardedAd.isLoaded()) {
-            rewardedAd.show(this, object : OnAdmobShowListener {
-                override fun onShow() {
-                    Log.d("tag_ADS", "Rewarded showed")
+            rewardedAd.show(this) { success ->
+                if (success) {
+                    Log.i("tag_ADS", "showRewardAds: show reward")
+                    LanguageActivity.start(this, false)
+                } else {
+                    showToast("Load ads RewardedAds failed")
                 }
-
-                override fun onError(e: String) {
-                    Log.d("tag_ADS", "Show rewarded error: $e")
-                }
-            })
+            }
         } else {
-            Log.d("tag_ADS", "Rewarded ad not loaded yet")
+            showToast("Load ads RewardedAds failed")
         }
     }
 
     fun showInterAdsSplash() {
-        interSplash.show(this, object : OnAdmobShowListener {
-            override fun onShow() {
-                Log.d("tag_ADS", "splash inter showed")
-                LanguageActivity.start(this@MainActivity, false)
-            }
-
-            override fun onError(e: String) {
-                Log.d("tag_ADS", "Show error splash: $e")
-            }
+        interSplash.show(this, onDone = {
+            Log.i("tag_ADS", "showInterAdsSplash: Done")
+            LanguageActivity.start(this)
         })
     }
 

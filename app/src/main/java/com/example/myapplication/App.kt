@@ -16,8 +16,8 @@ import com.example.myapplication.utils.AppEx.setAppLanguage
 import com.example.myapplication.utils.Constant
 import com.example.myapplication.utils.LocaleHelper
 import com.example.myapplication.utils.SpManager
-import com.example.myapplication.utils.ads.adsutils.AppOpenAdsUtil
-import com.example.myapplication.utils.ads.base.BaseAds.Companion.md5
+import com.example.myapplication.utils.ads.AppOpenAdsUtil
+import com.example.myapplication.libads.base.BaseAds.Companion.md5
 import com.google.android.ump.FormError
 import dagger.hilt.android.HiltAndroidApp
 import java.util.Locale
@@ -60,6 +60,7 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
         registerActivityLifecycleCallbacks(this)
     }
 
+    @SuppressLint("HardwareIds")
     fun initConsentManager(
         activity: Activity,
         testDeviceIds: List<String> = emptyList(),

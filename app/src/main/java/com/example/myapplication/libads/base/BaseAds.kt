@@ -1,10 +1,10 @@
-package com.example.myapplication.utils.ads.base
+package com.example.myapplication.libads.base
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.provider.Settings
 import com.example.myapplication.BuildConfig
-import com.example.myapplication.utils.ads.interfaces.OnAdmobLoadListener
+import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
@@ -37,7 +37,7 @@ open class BaseAds(val context: Context) {
     var onAdmobLoadListener: OnAdmobLoadListener? = null
 
     init {
-        MobileAds.initialize(context) {}
+        MobileAds.initialize(context)
 
         var deviceId = ""
 
@@ -57,13 +57,4 @@ open class BaseAds(val context: Context) {
             .setRequestAgent(deviceId)
     }
 
-//    interface OnAdmobLoadListener {
-//        fun onLoad()
-//        fun onError(e: String)
-//    }
-//
-//    interface OnAdmobShowListener {
-//        fun onShow()
-//        fun onError(e: String)
-//    }
 }

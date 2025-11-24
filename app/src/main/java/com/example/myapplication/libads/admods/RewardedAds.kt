@@ -1,4 +1,4 @@
-package com.example.myapplication.utils.ads.admods
+package com.example.myapplication.libads.admods
 
 
 import android.app.Activity
@@ -10,9 +10,9 @@ import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
 import com.example.myapplication.R
-import com.example.myapplication.utils.ads.base.BaseAds
-import com.example.myapplication.utils.ads.interfaces.OnAdmobLoadListener
-import com.example.myapplication.utils.ads.interfaces.OnAdmobShowListener
+import com.example.myapplication.libads.base.BaseAds
+import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
+import com.example.myapplication.libads.interfaces.OnAdmobShowListener
 import com.facebook.appevents.AppEventsLogger
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.FullScreenContentCallback
@@ -39,9 +39,6 @@ class RewardedAds(
         Log.i(TAG, "RewardAdmob: $id")
     }
 
-    // ===========================================================
-    //                     LOAD REWARDED
-    // ===========================================================
     fun load(onAdmobLoadListener: OnAdmobLoadListener?) {
         Log.i(TAG, "load rewarded")
         isLoading = true
@@ -78,9 +75,6 @@ class RewardedAds(
         )
     }
 
-    // ===========================================================
-    //                       SHOW REWARDED
-    // ===========================================================
     fun show(activity: Activity, onAdmobShowListener: OnAdmobShowListener) {
         Log.i(TAG, "show rewarded")
         earnReward = false
@@ -154,9 +148,6 @@ class RewardedAds(
         }, 2000)
     }
 
-    // ===========================================================
-    //                       CHECK LOADED
-    // ===========================================================
     fun loaded(): Boolean {
         Log.i(TAG, "loaded: ${rewardedAd != null}")
         return rewardedAd != null

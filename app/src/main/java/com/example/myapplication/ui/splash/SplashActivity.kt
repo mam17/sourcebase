@@ -7,8 +7,8 @@ import com.example.myapplication.base.activity.BaseActivity
 import com.example.myapplication.databinding.ActivitySplashBinding
 import com.example.myapplication.libads.consent.GoogleMobileAdsConsentManager
 import com.example.myapplication.ui.MainActivity
-import com.example.myapplication.utils.ads.adsutils.BannerAdsUntil.initBanner
-import com.example.myapplication.utils.ads.helper.CollapsiblePositionType
+import com.example.myapplication.utils.ads.BannerAdsUntil.initBanner
+import com.example.myapplication.libads.helper.CollapsiblePositionType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

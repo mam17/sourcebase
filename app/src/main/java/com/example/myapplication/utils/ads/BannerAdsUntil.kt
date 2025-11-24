@@ -1,12 +1,12 @@
-package com.example.myapplication.utils.ads.adsutils
+package com.example.myapplication.utils.ads
 
 import android.app.Activity
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import com.example.myapplication.utils.ads.admods.BannerAdLoader
-import com.example.myapplication.utils.ads.admods.BannerAds
-import com.example.myapplication.utils.ads.helper.CollapsiblePositionType
+import com.example.myapplication.libads.admods.BannerAdLoader
+import com.example.myapplication.libads.admods.BannerAds
+import com.example.myapplication.libads.helper.CollapsiblePositionType
 import com.facebook.shimmer.ShimmerFrameLayout
 import java.util.Timer
 import kotlin.concurrent.timer

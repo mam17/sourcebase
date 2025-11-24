@@ -1,4 +1,4 @@
-package com.example.myapplication.utils.ads.helper
+package com.example.myapplication.libads.helper
 
 enum class CollapsiblePositionType {
     TOP,

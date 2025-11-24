@@ -1,4 +1,4 @@
-package com.example.myapplication.utils.ads.admods
+package com.example.myapplication.libads.admods
 
 import android.app.Activity
 import android.util.Log

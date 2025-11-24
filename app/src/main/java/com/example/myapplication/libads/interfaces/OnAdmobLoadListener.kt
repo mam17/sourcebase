@@ -1,4 +1,4 @@
-package com.example.myapplication.utils.ads.interfaces
+package com.example.myapplication.libads.interfaces
 
 interface OnAdmobLoadListener {
         fun onLoad()
