@@ -11,6 +11,7 @@ import android.view.Gravity
 import android.view.WindowManager
 import com.example.myapplication.R
 import com.example.myapplication.libads.base.BaseAds
+import com.example.myapplication.libads.event.MMPManager.logAdRevenue
 import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
 import com.example.myapplication.libads.interfaces.OnAdmobShowListener
 import com.facebook.appevents.AppEventsLogger
@@ -24,7 +25,8 @@ import java.util.Currency
 
 class RewardedAds(
     context: Context,
-    private val id: String
+    private val id: String,
+    private val adPlacement: String = ""
 ) : BaseAds(context) {
 
     companion object {
@@ -69,6 +71,13 @@ class RewardedAds(
                                     Currency.getInstance("USD")
                                 )
                         }
+
+                        context.logAdRevenue(
+                            adValue = value,
+                            adUnitId = adPlacement,
+                            responseInfo = rewardedAd?.responseInfo,
+                            adType = "ad_rewarded"
+                        )
                     }
                 }
             }
@@ -89,7 +98,7 @@ class RewardedAds(
         val dialog = Dialog(activity).apply {
             setContentView(R.layout.layout_loading_ads)
 
-            window?.setBackgroundDrawableResource(android.R.color.transparent)
+            window?.setBackgroundDrawableResource(R.color.transparent)
 
             window?.let { w ->
                 val params = w.attributes

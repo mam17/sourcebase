@@ -38,7 +38,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            // Thêm dòng này !
+            manifestPlaceholders["ad_app_id"] = "ca-app-pub-3940256099942544~3347511713"
         }
+
         debug {
             isMinifyEnabled = false
             proguardFiles(
@@ -137,13 +141,11 @@ dependencies {
     implementation("com.airbnb.android:lottie:6.6.7")
 
     //AdMob
-    implementation("com.google.android.gms:play-services-ads:24.5.0")
+    implementation("com.google.android.gms:play-services-ads:24.7.0")
     implementation("com.google.android.gms:play-services-appset:16.1.0")
-    implementation("com.google.android.gms:play-services-basement:18.6.0")
-    implementation("com.google.android.gms:play-services-ads-identifier:18.1.0")
 
     //UMP
-    implementation("com.google.android.ump:user-messaging-platform:3.2.0")
+    implementation("com.google.android.ump:user-messaging-platform:4.0.0")
 
     //Facebook SDK
     implementation("com.facebook.android:facebook-android-sdk:18.1.3")
@@ -153,20 +155,21 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
     implementation("com.google.firebase:firebase-crashlytics-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation("com.google.firebase:firebase-analytics:23.0.0")
+//    implementation("com.google.firebase:firebase-analytics:23.0.0")
     implementation("com.google.firebase:firebase-core:21.1.1")
 
     //mediation admob
-    implementation ("com.google.ads.mediation:facebook:6.20.0.0")
-    implementation ("com.google.ads.mediation:applovin:13.3.1.0")
-    implementation ("com.google.ads.mediation:vungle:7.5.0.0")
-    implementation ("com.google.ads.mediation:pangle:7.2.0.6.0")
+    implementation("com.google.ads.mediation:facebook:6.20.0.0")
+    implementation("com.google.ads.mediation:applovin:13.3.1.0")
+    implementation("com.google.ads.mediation:vungle:7.5.0.0")
+    implementation("com.google.ads.mediation:pangle:7.2.0.6.0")
     implementation("com.google.ads.mediation:mintegral:16.9.71.0")
 
     //adjust
     implementation("com.adjust.sdk:adjust-android:5.4.6")
-    implementation("com.android.installreferrer:installreferrer:2.2")
 
     //Appsflyer
-//    implementation("com.appsflyer:af-android-sdk:6.17.4")
+    implementation("com.appsflyer:af-android-sdk:6.17.0")
+    implementation("com.android.installreferrer:installreferrer:2.2")
+
 }

@@ -10,6 +10,7 @@ import android.view.Gravity
 import android.view.WindowManager
 import com.example.myapplication.R
 import com.example.myapplication.libads.base.BaseAds
+import com.example.myapplication.libads.event.MMPManager.logAdRevenue
 import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
 import com.example.myapplication.libads.interfaces.OnAdmobShowListener
 import com.facebook.appevents.AppEventsLogger
@@ -23,7 +24,8 @@ import java.util.Currency
 
 class InterstitialAds(
     context: Context,
-    private val id: String
+    private val id: String,
+    private val adPlacement: String = ""
 ) : BaseAds(context) {
 
     companion object {
@@ -37,7 +39,7 @@ class InterstitialAds(
     }
 
     fun load(callback: OnAdmobLoadListener, timeoutMillis: Long) {
-        Log.i(TAG, "load()")
+        Log.i(TAG, "load() - Placement: $adPlacement")
         onAdmobLoadListener = callback
 
         if (context == null) {
@@ -61,7 +63,7 @@ class InterstitialAds(
             object : InterstitialAdLoadCallback() {
 
                 override fun onAdLoaded(ad: InterstitialAd) {
-                    Log.i(TAG, "onAdLoaded")
+                    Log.i(TAG, "onAdLoaded - Placement: $adPlacement")
                     interstitialAd = ad
                     onAdmobLoadListener?.onLoad()
                     onAdmobLoadListener = null
@@ -74,20 +76,27 @@ class InterstitialAds(
                                 Currency.getInstance("USD")
                             )
                         }
+                        context.logAdRevenue(
+                            adValue = adValue,
+                            adUnitId = adPlacement,
+                            responseInfo = interstitialAd?.responseInfo,
+                            adType = "ad_interstitial"
+                        )
                     }
                 }
 
                 override fun onAdFailedToLoad(error: LoadAdError) {
-                    Log.i(TAG, "onAdFailedToLoad: ${error.message}")
+                    Log.i(TAG, "onAdFailedToLoad: ${error.message} - Placement: $adPlacement")
                     onAdmobLoadListener?.onError(error.message)
                     onAdmobLoadListener = null
                 }
+
             }
         )
     }
 
     fun showInterstitial(activity: Activity, listener: OnAdmobShowListener) {
-        Log.i(TAG, "showInterstitial()")
+        Log.i(TAG, "showInterstitial() - Placement: $adPlacement")
 
         val ad = interstitialAd
         if (ad == null || isShowingOpenAd) {
@@ -98,20 +107,20 @@ class InterstitialAds(
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
 
             override fun onAdDismissedFullScreenContent() {
-                Log.i(TAG, "onAdDismissedFullScreenContent")
+                Log.i(TAG, "onAdDismissedFullScreenContent - Placement: $adPlacement")
                 interstitialAd = null
                 listener.onShow()
                 canShowOpenApp = true
             }
 
             override fun onAdFailedToShowFullScreenContent(error: AdError) {
-                Log.i(TAG, "onAdFailedToShowFullScreenContent: ${error.message}")
+                Log.i(TAG, "onAdFailedToShowFullScreenContent: ${error.message} - Placement: $adPlacement")
                 interstitialAd = null
                 listener.onError(error.message)
             }
 
             override fun onAdShowedFullScreenContent() {
-                Log.i(TAG, "onAdShowedFullScreenContent")
+                Log.i(TAG, "onAdShowedFullScreenContent - Placement: $adPlacement")
                 canShowOpenApp = false
             }
         }
@@ -119,7 +128,7 @@ class InterstitialAds(
         val dialog = Dialog(activity).apply {
             setContentView(R.layout.layout_loading_ads)
 
-            window?.setBackgroundDrawableResource(android.R.color.transparent)
+            window?.setBackgroundDrawableResource(R.color.transparent)
 
             window?.let { w ->
                 val params = w.attributes
@@ -132,7 +141,6 @@ class InterstitialAds(
             setCancelable(false)
         }
 
-
         try {
             if (!activity.isDestroyed && !dialog.isShowing) dialog.show()
         } catch (e: Exception) {
@@ -142,14 +150,16 @@ class InterstitialAds(
         Handler(Looper.getMainLooper()).postDelayed({
             if (!activity.isDestroyed) {
                 dialog.dismiss()
-                interstitialAd?.show(activity) ?: listener.onError("")
+                interstitialAd?.show(activity) ?: run {
+                    listener.onError("")
+                }
             }
         }, 2000)
     }
 
     fun available(): Boolean {
         val available = interstitialAd != null && !isShowingOpenAd
-        Log.i(TAG, "available: $available")
+        Log.i(TAG, "available: $available - Placement: $adPlacement")
         return available
     }
 }

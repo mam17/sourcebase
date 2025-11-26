@@ -32,7 +32,7 @@ class AppOpenAdsUtil(
         val fallbackId = if (idAds2 != null) idAds else null
 
         fun loadAdUnit(adUnitId: String, onFail: (() -> Unit)?) {
-            adsController = AppOpenAds(activity, adUnitId)
+            adsController = AppOpenAds(activity, adUnitId, adPlacement)
             adsController?.loadAd(activity, object : OnAdmobLoadListener {
                 override fun onLoad() {
                     isLoading = false

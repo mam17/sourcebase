@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import com.example.myapplication.libads.base.BaseAds
+import com.example.myapplication.libads.event.MMPManager.logAdRevenue
 import com.example.myapplication.libads.helper.CollapsiblePositionType
 import com.facebook.appevents.AppEventsLogger
 import com.facebook.shimmer.ShimmerFrameLayout
@@ -19,7 +20,8 @@ import java.util.Currency
 
 class BannerAds(
     context: Context,
-    private val collapsiblePositionType: CollapsiblePositionType
+    private val collapsiblePositionType: CollapsiblePositionType,
+    private val adPlacement: String = ""
 ) : BaseAds(context) {
 
     companion object {
@@ -60,6 +62,13 @@ class BannerAds(
                                 Currency.getInstance("USD")
                             )
                         }
+
+                        context.logAdRevenue(
+                            adValue = adValue,
+                            adUnitId = adPlacement,
+                            responseInfo = adView?.responseInfo,
+                            adType = "ad_banner"
+                        )
                     }
                 }
             }

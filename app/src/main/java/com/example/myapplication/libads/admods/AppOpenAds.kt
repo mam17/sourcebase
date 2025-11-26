@@ -11,16 +11,21 @@ import android.view.Gravity
 import android.view.WindowManager
 import com.example.myapplication.R
 import com.example.myapplication.libads.base.BaseAds
+import com.example.myapplication.libads.event.MMPManager.logAdRevenue
 import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
 import com.facebook.appevents.AppEventsLogger
-import com.google.android.gms.ads.*
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.appopen.AppOpenAd
 import java.math.BigDecimal
-import java.util.*
+import java.util.Currency
+import java.util.Date
 
 class AppOpenAds(
     context: Context,
-    private val id: String
+    private val id: String,
+    private val adPlacement: String = ""
 ) : BaseAds(context) {
 
     companion object {
@@ -66,6 +71,13 @@ class AppOpenAds(
                                 Currency.getInstance("USD")
                             )
                         }
+
+                        context.logAdRevenue(
+                            adValue = adValue,
+                            adUnitId = adPlacement,
+                            responseInfo = appOpenAd?.responseInfo,
+                            adType = "ad_app_open_resume"
+                        )
                     }
                 }
 
