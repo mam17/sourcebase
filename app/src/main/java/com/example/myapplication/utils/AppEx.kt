@@ -5,8 +5,14 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.net.toUri
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import com.example.myapplication.App
 import com.example.myapplication.R
 import com.example.myapplication.domain.layer.LanguageModel
+import com.google.android.gms.ads.AdValue
+import com.google.android.gms.ads.ResponseInfo
 import com.google.gson.Gson
 import java.util.Locale
 
@@ -62,4 +68,16 @@ object AppEx {
 //        )
 //        startActivity(Intent.createChooser(intent, resources.getString(R.string.txt_choose_one)))
 //    }
+
+    fun <T> LiveData<T>.observeOnce(
+        lifecycleOwner: LifecycleOwner,
+        observer: (T) -> Unit
+    ) {
+        observe(lifecycleOwner, object : Observer<T> {
+            override fun onChanged(t: T) {
+                observer(t)
+                removeObserver(this)
+            }
+        })
+    }
 }

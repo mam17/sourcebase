@@ -11,73 +11,76 @@ class RewardedAdsUtil(
     private val context: Context,
     private val idAds: String,
     private val idAds2: String? = null,
+    private val adPlacement: String,
     private val isEnable: Boolean
 ) {
 
     private var adsController: RewardedAds? = null
     private var isLoading = false
 
-    /** Public load (no callbacks) */
-    fun load() {
-        if (!isEnable || isLoading) return
+    fun load(callback: OnAdmobLoadListener) {
+        if (!isEnable) {
+            callback.onError("Ad disabled: $adPlacement")
+            return
+        }
+        if (isLoading) return
         isLoading = true
 
         if (idAds2 != null) {
-            loadInternal(idAds2) { loadInternal(idAds) }
+            loadInternal(idAds2, callback) {
+                loadInternal(idAds, callback, null)
+            }
         } else {
-            loadInternal(idAds)
+            loadInternal(idAds, callback, null)
         }
     }
 
-    /** Internal load */
-    private fun loadInternal(adUnitId: String, onFail: (() -> Unit)? = null) {
-        adsController = RewardedAds(context, adUnitId)
-
-        adsController?.load(onAdmobLoadListener = object : OnAdmobLoadListener {
+    private fun loadInternal(adUnitId: String, callback: OnAdmobLoadListener, onFail: (() -> Unit)?) {
+        adsController = RewardedAds(context, adUnitId, adPlacement)
+        adsController?.load(object : OnAdmobLoadListener {
             override fun onLoad() {
                 isLoading = false
+                callback.onLoad()
             }
+
             override fun onError(e: String) {
                 isLoading = false
-                onFail?.invoke()
+                onFail?.invoke() ?: callback.onError(e)
             }
         })
     }
 
-    /**
-     * Show Rewarded → return result as a simple Boolean:
-     * true  = user earned reward
-     * false = fail / close / no reward
-     */
-    fun show(activity: Activity, result: (Boolean) -> Unit) {
+    fun show(activity: Activity, listener: OnAdmobShowListener) {
         if (!isEnable) {
-            result(false)
+            listener.onError("Ad disabled: $adPlacement")
             return
         }
 
         val controller = adsController ?: run {
-            result(false)
+            listener.onError("Ad not loaded")
             return
         }
+        App.isInterstitialShowing = true
 
         controller.show(activity, object : OnAdmobShowListener {
             override fun onShow() {
-                result(true)
-                reload()
+                App.isInterstitialShowing = false
+
+                listener.onShow()
+                load(object : OnAdmobLoadListener {
+                    override fun onLoad() {}
+                    override fun onError(e: String) {}
+                })
             }
 
             override fun onError(e: String) {
-                result(false)
-                reload()
+                App.isInterstitialShowing = false
+
+                listener.onError(e)
             }
         })
 
         adsController = null
-    }
-
-    /** Auto reload */
-    private fun reload() {
-        load()
     }
 
     fun isLoaded(): Boolean = adsController?.loaded() == true

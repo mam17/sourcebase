@@ -55,10 +55,11 @@ object BannerAdsUntil {
         activity: Activity,
         primaryAdUnitId: String,
         secondaryAdUnitId: String? = null,
+        adPlacement: String,
         shimmer: ShimmerFrameLayout,
         collapsiblePosition: CollapsiblePositionType = CollapsiblePositionType.NONE
     ) {
-        bannerAds = BannerAds(activity, collapsiblePosition)
+        bannerAds = BannerAds(activity, collapsiblePosition, adPlacement)
 
         if (!secondaryAdUnitId.isNullOrEmpty()) {
             Log.i(TAG, "Trying to load secondary/floor ad: $secondaryAdUnitId")

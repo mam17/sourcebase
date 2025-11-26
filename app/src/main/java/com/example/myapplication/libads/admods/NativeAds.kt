@@ -10,20 +10,29 @@ import android.widget.RatingBar
 import android.widget.TextView
 import androidx.lifecycle.MutableLiveData
 import com.example.myapplication.BuildConfig
-import com.example.myapplication.libads.base.BaseAds
-import com.facebook.appevents.AppEventsLogger
-import com.facebook.shimmer.ShimmerFrameLayout
-import com.google.android.gms.ads.*
-import com.google.android.gms.ads.nativead.*
-import java.math.BigDecimal
-import java.util.*
 import com.example.myapplication.R
+import com.example.myapplication.libads.base.BaseAds
+import com.example.myapplication.libads.event.MMPManager.logAdRevenue
 import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
 import com.example.myapplication.libads.interfaces.OnAdmobShowListener
+import com.facebook.appevents.AppEventsLogger
+import com.facebook.shimmer.ShimmerFrameLayout
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdLoader
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.MediaAspectRatio
+import com.google.android.gms.ads.VideoController
+import com.google.android.gms.ads.VideoOptions
+import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.google.android.gms.ads.nativead.NativeAdView
+import java.math.BigDecimal
+import java.util.Currency
 
 class NativeAds(
     context: Context,
-    private val id: String
+    private val id: String,
+    private val adPlacement: String = ""
 ) : BaseAds(context) {
 
     companion object {
@@ -48,13 +57,14 @@ class NativeAds(
     // ========================= SHOW AD ==============================
     fun showNative(
         parent: ShimmerFrameLayout,
+        nativeAdViewId: Int,
         onNativeShowListener: OnAdmobShowListener?
     ) {
         val ad = nativeAdLive.value
         if (ad != null) {
             enableReload(true)
 
-            val adView = parent.findViewById<NativeAdView>(R.id.native_ad_view)
+            val adView = parent.findViewById<NativeAdView>(nativeAdViewId)
 
             parent.hideShimmer()
             parent.stopShimmer()
@@ -118,6 +128,13 @@ class NativeAds(
                         Currency.getInstance("USD")
                     )
                 }
+
+                context.logAdRevenue(
+                    adValue = value,
+                    adUnitId = adPlacement,
+                    responseInfo = ad.responseInfo,
+                    adType = "ad_native"
+                )
             }
 
             setNativeAd(ad)
@@ -264,11 +281,11 @@ class NativeAds(
         adView.setNativeAd(nativeAd)
 
         val vc = nativeAd.mediaContent?.videoController
-        vc?.setVideoLifecycleCallbacks(object : VideoController.VideoLifecycleCallbacks() {
+        vc?.videoLifecycleCallbacks = object : VideoController.VideoLifecycleCallbacks() {
             override fun onVideoEnd() {
                 super.onVideoEnd()
             }
-        })
+        }
 
     }
 }
