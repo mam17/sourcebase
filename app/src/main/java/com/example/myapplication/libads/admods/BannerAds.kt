@@ -12,12 +12,12 @@ import com.facebook.appevents.AppEventsLogger
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.ads.mediation.admob.AdMobAdapter
 import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
 import java.math.BigDecimal
 import java.util.Currency
-
 class BannerAds(
     context: Context,
     private val collapsiblePositionType: CollapsiblePositionType,
@@ -30,26 +30,75 @@ class BannerAds(
 
     private var adView: AdView? = null
 
+
+    /** -------------------- PUBLIC: Show banner -------------------- */
     fun showBanner(
         activity: Activity,
         id: String,
         parent: ShimmerFrameLayout
     ) {
-        Log.i(TAG, "showBanner: $id")
+        loadBanner(
+            activity = activity,
+            adUnitId = id,
+            parent = parent,
+            onFailed = {
+                parent.removeAllViews()
+                parent.hideShimmer()
+            }
+        )
+    }
 
+    /** -------------------- PUBLIC: Show with fallback -------------------- */
+    fun showBannerWithFallback(
+        activity: Activity,
+        primaryAdUnitId: String,
+        secondaryAdUnitId: String,
+        parent: ShimmerFrameLayout
+    ) {
+        loadBanner(
+            activity = activity,
+            adUnitId = secondaryAdUnitId,
+            parent = parent,
+            onFailed = {
+                Log.i(TAG, "Secondary failed → Try primary")
+                loadBanner(
+                    activity = activity,
+                    adUnitId = primaryAdUnitId,
+                    parent = parent,
+                    onFailed = {
+                        Log.i(TAG, "Primary also failed")
+                        parent.removeAllViews()
+                        parent.hideShimmer()
+                    }
+                )
+            }
+        )
+    }
+
+
+    /** --------------------  CORE LOADER (dùng chung) -------------------- */
+    private fun loadBanner(
+        activity: Activity,
+        adUnitId: String,
+        parent: ShimmerFrameLayout,
+        onFailed: () -> Unit
+    ) {
         val adSize = getAdSize(activity, parent)
-        adView = AdView(activity).apply {
+        val request = buildAdRequest()
+
+        val adViewLocal = AdView(activity).apply {
             setAdSize(adSize)
-            adUnitId = id
+            this.adUnitId = adUnitId
 
             adListener = object : AdListener() {
-                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    Log.i(TAG, "onAdFailedToLoad: ${loadAdError.message}")
-                    parent.removeAllViews()
+                override fun onAdFailedToLoad(error: LoadAdError) {
+                    Log.i(TAG, "Failed Ad: $adUnitId | ${error.message}")
+                    onFailed()
                 }
 
                 override fun onAdLoaded() {
-                    Log.i(TAG, "onAdLoaded")
+                    Log.i(TAG, "Loaded OK: $adUnitId")
+                    adView = this@apply
                     parent.removeAllViews()
                     parent.addView(this@apply)
                     parent.hideShimmer()
@@ -57,10 +106,8 @@ class BannerAds(
                     setOnPaidEventListener { adValue ->
                         val revenue = adValue.valueMicros / 1_000_000.0
                         if (revenue > 0) {
-                            AppEventsLogger.newLogger(context).logPurchase(
-                                BigDecimal.valueOf(revenue),
-                                Currency.getInstance("USD")
-                            )
+                            AppEventsLogger.newLogger(context)
+                                .logPurchase(BigDecimal.valueOf(revenue), Currency.getInstance("USD"))
                         }
 
                         context.logAdRevenue(
@@ -74,84 +121,42 @@ class BannerAds(
             }
         }
 
-        val bundle = Bundle()
-
-        when (collapsiblePositionType) {
-            CollapsiblePositionType.NONE -> {}
-            CollapsiblePositionType.TOP -> {
-                bundle.putString("collapsible", "top")
-                adRequestBuilder.addNetworkExtrasBundle(AdMobAdapter::class.java, bundle)
-            }
-
-            CollapsiblePositionType.BOTTOM -> {
-                bundle.putString("collapsible", "bottom")
-                adRequestBuilder.addNetworkExtrasBundle(AdMobAdapter::class.java, bundle)
-            }
-        }
-
-        adView?.loadAd(adRequestBuilder.build())
-    }
-
-    fun showBannerWithFallback(
-        activity: Activity,
-        primaryAdUnitId: String,
-        secondaryAdUnitId: String,
-        parent: ShimmerFrameLayout
-    ) {
-        Log.i(TAG, "Loading secondary/floor ad first: $secondaryAdUnitId")
-
-        val adSize = getAdSize(activity, parent)
-
-        adView = AdView(activity).apply {
-            setAdSize(adSize)
-            adUnitId = secondaryAdUnitId
-
-            adListener = object : AdListener() {
-                override fun onAdLoaded() {
-                    Log.i(TAG, "Secondary ad loaded successfully")
-                    parent.removeAllViews()
-                    parent.addView(this@apply)
-                    parent.hideShimmer()
-                }
-
-                override fun onAdFailedToLoad(error: LoadAdError) {
-                    Log.i(TAG, "Secondary ad failed, fallback to primary: $primaryAdUnitId")
-                    showBanner(activity, primaryAdUnitId, parent)
-                }
-            }
-        }
-
-        // Load secondary
-        adView?.loadAd(adRequestBuilder.build())
+        adViewLocal.loadAd(request)
     }
 
 
+    /** --------------------  Build AdRequest -------------------- */
+    private fun buildAdRequest(): AdRequest {
+        val builder = AdRequest.Builder()
+
+        if (collapsiblePositionType != CollapsiblePositionType.NONE) {
+            val bundle = Bundle().apply {
+                putString(
+                    "collapsible",
+                    if (collapsiblePositionType == CollapsiblePositionType.TOP) "top" else "bottom"
+                )
+            }
+            builder.addNetworkExtrasBundle(AdMobAdapter::class.java, bundle)
+        }
+
+        return builder.build()
+    }
+
+
+    /** --------------------  Utils -------------------- */
     fun getAdSize(activity: Activity, container: View): AdSize {
         val displayMetrics = activity.resources.displayMetrics
         val density = displayMetrics.density
-        var adWidthPixels = container.width.toFloat()
 
-        if (adWidthPixels == 0f) {
-            adWidthPixels = displayMetrics.widthPixels.toFloat()
-        }
+        var adWidthPixels = container.width.toFloat()
+        if (adWidthPixels == 0f) adWidthPixels = displayMetrics.widthPixels.toFloat()
 
         val adWidth = (adWidthPixels / density).toInt()
         return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity, adWidth)
     }
 
-    fun onResume() {
-        adView?.resume()
-    }
-
-    fun onPause() {
-        adView?.pause()
-    }
-
-    fun onDestroy() {
-        adView?.destroy()
-    }
-
-    fun reload() {
-        adView?.loadAd(adRequestBuilder.build())
-    }
+    fun onResume() = adView?.resume()
+    fun onPause() = adView?.pause()
+    fun onDestroy() = adView?.destroy()
+    fun reload() = adView?.loadAd(buildAdRequest())
 }
