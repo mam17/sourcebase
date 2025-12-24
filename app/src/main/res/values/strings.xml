@@ -23,4 +23,5 @@
     <string name="txt_loading">Loading</string>
     <string name="txt_network_connected">Network connected</string>
     <string name="txt_this_action_contain_ads">This action contain ads</string>
+    <string name="txt_loading_ads">Loading Ads...</string>
 </resources>

@@ -3,18 +3,34 @@ package com.example.myapplication.libads.admobs
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import androidx.core.os.bundleOf
+import com.example.myapplication.libads.adsbase.BaseAdTracker
+import com.example.myapplication.libads.utils.AdPlacement
+import com.example.myapplication.libads.utils.AdsGlobalState
+import com.example.myapplication.libads.events.MMPManager.logAdRevenue
+import com.example.myapplication.libads.events.MMPManager.logInterstitialRevenue
+import com.example.myapplication.libads.helper.DialogAdsLoading
 import com.example.myapplication.libads.interfaces.InterAdsCallback
+import com.facebook.appevents.AppEventsLogger
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.firebase.analytics.FirebaseAnalytics
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.math.BigDecimal
+import java.util.Currency
 
 class InterstitialAdHelper(
     private val context: Context,
-    private val adUnitId: String
-) {
+    private val adUnitId: String,
+    private val adPlacement: AdPlacement
+): BaseAdTracker() {
 
     companion object {
         private const val TAG = "InterstitialAdHelper"
@@ -42,8 +58,20 @@ class InterstitialAdHelper(
 
                 override fun onAdLoaded(ad: InterstitialAd) {
                     Log.i(TAG, "onAdLoaded")
+                    resetTracker()
                     interstitialAd = ad
                     isLoading = false
+
+                    interstitialAd?.setOnPaidEventListener { adValue ->
+                        logPaidOnce {
+                            context.logInterstitialRevenue(
+                                adValue = adValue,
+                                placement = adPlacement,
+                                responseInfo = interstitialAd?.responseInfo
+                            )
+                        }
+                    }
+
                     callback.onLoadSuccess()
                 }
 
@@ -59,48 +87,77 @@ class InterstitialAdHelper(
 
     /* ================= SHOW ================= */
 
-    fun show(activity: Activity, callback: InterAdsCallback) {
-        val ad = interstitialAd
+    fun show(
+        activity: Activity,
+        callback: InterAdsCallback,
+        loadingTime: Long = 2000L
+    ) {
+        if (isShowing) {
+            callback.onShowFailed("Interstitial is showing")
+            return
+        }
 
-        if (
-            ad == null ||
-            isShowing ||
-            activity.isFinishing ||
-            activity.isDestroyed
-        ) {
+        val ad = interstitialAd
+        if (ad == null) {
             callback.onShowFailed("Interstitial not ready")
             return
         }
 
-        isShowing = true
+        val dialog = DialogAdsLoading(activity)
+        dialog.show()
 
-        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(loadingTime)
 
-            override fun onAdShowedFullScreenContent() {
-                Log.i(TAG, "onAdShowed")
-                callback.onShowSuccess()
+            if (activity.isFinishing || activity.isDestroyed) {
+                dialog.dismiss()
+                return@launch
             }
 
-            override fun onAdDismissedFullScreenContent() {
-                Log.i(TAG, "onAdDismissed")
-                cleanup()
-                callback.onAdClosed()
-            }
+            dialog.dismiss()
 
-            override fun onAdFailedToShowFullScreenContent(error: AdError) {
-                Log.i(TAG, "onAdFailedToShow: ${error.message}")
-                cleanup()
-                callback.onShowFailed(error.message)
-                callback.onAdClosed()
-            }
+            ad.fullScreenContentCallback =
+                object : FullScreenContentCallback() {
+
+                    override fun onAdShowedFullScreenContent() {
+                        AdsGlobalState.isFullscreenAdShowing = true
+                        logImpressionOnce {
+                            FirebaseAnalytics.getInstance(context).logEvent(
+                                "ad_impression",
+                                bundleOf(
+                                    "ad_platform" to "admob",
+                                    "ad_unit_name" to adPlacement.value,
+                                    "ad_format" to "interstitial",
+                                    "mediation" to getMediationName()
+                                )
+                            )
+                        }
+                        callback.onShowSuccess()
+                    }
+
+                    override fun onAdDismissedFullScreenContent() {
+                        isShowing = false
+                        AdsGlobalState.isFullscreenAdShowing = false
+                        interstitialAd = null
+                        callback.onAdClosed()
+                    }
+
+                    override fun onAdFailedToShowFullScreenContent(error: AdError) {
+                        isShowing = false
+                        AdsGlobalState.isFullscreenAdShowing = false
+                        interstitialAd = null
+                        callback.onShowFailed(error.message)
+                    }
+                }
+
+            ad.show(activity)
         }
-
-        ad.show(activity)
     }
 
     /* ================= UTILS ================= */
 
     fun isReady(): Boolean = interstitialAd != null
+    fun isShowing(): Boolean = isShowing
 
     fun destroy() {
         cleanup()
@@ -111,5 +168,13 @@ class InterstitialAdHelper(
         interstitialAd?.fullScreenContentCallback = null
         interstitialAd = null
         isShowing = false
+    }
+
+    private fun getMediationName(): String {
+        return interstitialAd
+            ?.responseInfo
+            ?.loadedAdapterResponseInfo
+            ?.adSourceName
+            ?: "unknown"
     }
 }

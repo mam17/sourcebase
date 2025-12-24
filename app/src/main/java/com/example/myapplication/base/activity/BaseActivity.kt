@@ -16,6 +16,7 @@ import androidx.fragment.app.commit
 import androidx.viewbinding.ViewBinding
 import com.example.myapplication.R
 import com.example.myapplication.domain.layer.LanguageModel
+import com.example.myapplication.libads.utils.FirebaseConfigManager
 import com.example.myapplication.ui.dialog.DialogLoading
 import com.example.myapplication.utils.LocaleHelper
 import com.example.myapplication.utils.SpManager
@@ -28,6 +29,7 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
     private var dialogLoading: DialogLoading? = null
     lateinit var spManager: SpManager
     var isCheckOpenApp = false
+    val adsConfig = FirebaseConfigManager.instance().adConfig
 
     open fun onBack() {
         finish()
