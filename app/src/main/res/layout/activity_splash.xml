@@ -36,5 +36,5 @@
         app:indicatorColor="@color/color_main"
         app:trackCornerRadius="@dimen/size12"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:trackColor="@color/white" />
+        app:trackColor="@color/gray" />
 </androidx.constraintlayout.widget.ConstraintLayout>

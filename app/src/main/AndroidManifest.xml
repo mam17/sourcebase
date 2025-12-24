@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".App"
@@ -12,6 +13,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        tools:replace="android:dataExtractionRules,android:fullBackupContent"
         tools:targetApi="31">
         <activity
             android:name=".ui.permission.PermissionActivity"
@@ -34,6 +36,24 @@
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"/>
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${ad_app_id}" />
+
+<!--        <meta-data-->
+<!--            android:name="com.facebook.sdk.ApplicationId"-->
+<!--            android:value="@string/facebook_app_id" />-->
+<!--        <meta-data-->
+<!--            android:name="com.facebook.sdk.ClientToken"-->
+<!--            android:value="@string/facebook_client_token" />-->
+
+        <meta-data
+            android:name="com.tiktok.sdk.AppId"
+            android:value="717171717171717171" />
+
+        <meta-data
+            android:name="appsflyer_autoStart"
+            android:value="true" />
     </application>
 
 </manifest>

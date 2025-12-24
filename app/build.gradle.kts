@@ -9,6 +9,8 @@ plugins {
     id("kotlin-parcelize")
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 android {
@@ -36,8 +38,30 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            manifestPlaceholders["ad_app_id"] = "ca-app-pub-3940256099942544~3347511713"
+        }
+
+        debug {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+
+            manifestPlaceholders["ad_app_id"] = "ca-app-pub-3940256099942544~3347511713"
+
+            buildConfigField("String", "inter_splash", "\"ca-app-pub-3940256099942544/1033173712\"")
+            buildConfigField("String", "inter_main", "\"ca-app-pub-3940256099942544/1033173712\"")
+            buildConfigField("String", "appopen_resume", "\"ca-app-pub-3940256099942544/9257395921\"")
+            buildConfigField("String", "native_home", "\"ca-app-pub-3940256099942544/2247696110\"")
+            buildConfigField("String", "banner_splash", "\"ca-app-pub-3940256099942544/2014213617\"")
+            buildConfigField("String", "reward_create", "\"ca-app-pub-3940256099942544/5224354917\"")
+
         }
     }
+
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -47,6 +71,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
     bundle {
         language {
@@ -109,4 +134,36 @@ dependencies {
 
     //Dot
     implementation(libs.dotsindicator)
+
+    //AdMob
+    implementation("com.google.android.gms:play-services-ads:24.7.0")
+    implementation("com.google.android.gms:play-services-appset:16.1.0")
+
+    //UMP
+    implementation("com.google.android.ump:user-messaging-platform:4.0.0")
+
+    //Facebook SDK
+    implementation("com.facebook.android:facebook-android-sdk:18.1.3")
+
+    //Firebase
+    implementation("com.google.firebase:firebase-config-ktx:22.1.2")
+    implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
+    implementation("com.google.firebase:firebase-crashlytics-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+//    implementation("com.google.firebase:firebase-analytics:23.0.0")
+    implementation("com.google.firebase:firebase-core:21.1.1")
+
+    //Mediation admob
+    implementation("com.google.ads.mediation:facebook:6.20.0.0")
+    implementation("com.google.ads.mediation:applovin:13.3.1.0")
+    implementation("com.google.ads.mediation:vungle:7.5.0.0")
+    implementation("com.google.ads.mediation:pangle:7.2.0.6.0")
+    implementation("com.google.ads.mediation:mintegral:16.9.71.0")
+
+    //Adjust
+    implementation("com.adjust.sdk:adjust-android:5.4.6")
+
+    //Appsflyer
+    implementation("com.appsflyer:af-android-sdk:6.17.0")
+    implementation("com.android.installreferrer:installreferrer:2.2")
 }
