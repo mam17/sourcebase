@@ -6,74 +6,63 @@ import android.util.Log
 import com.example.myapplication.App
 import com.example.myapplication.libads.adsbase.BaseAdsHelper
 import com.example.myapplication.libads.helper.DialogAdsLoading
-import com.example.myapplication.libads.interfaces.InterAdsCallback
 import com.example.myapplication.libads.utils.AdPlacement
 import com.example.myapplication.libads.utils.AdsGlobalState
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.gms.ads.*
+import com.google.android.gms.ads.rewarded.RewardedAd
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class InterstitialAdHelper(
+class RewardedAdHelper(
     context: Context,
     private val adUnitId: String,
     adPlacement: AdPlacement
 ) : BaseAdsHelper(
     context = context,
     adPlacement = adPlacement,
-    adType = "interstitial"
+    adType = "reward"
 ) {
 
     companion object {
-        private const val TAG = "InterstitialAdHelper"
+        private const val TAG = "RewardedAdHelper"
     }
 
-    private var interstitialAd: InterstitialAd? = null
+    private var rewardedAd: RewardedAd? = null
     private var isLoading = false
     private var isShowing = false
 
     /* ================= LOAD ================= */
-    fun load(callback: InterAdsCallback) {
-        if (isLoading || interstitialAd != null) {
-            Log.i(TAG, "load ignored")
-            return
-        }
+    fun load() {
+        if (isLoading || rewardedAd != null) return
 
         isLoading = true
 
-        InterstitialAd.load(
+        resetTracker()
+
+        RewardedAd.load(
             context,
             adUnitId,
             AdRequest.Builder().build(),
-            object : InterstitialAdLoadCallback() {
+            object : RewardedAdLoadCallback() {
 
-                override fun onAdLoaded(ad: InterstitialAd) {
-                    Log.i(TAG, "onAdLoaded")
-                    resetTracker()
-                    interstitialAd = ad
+                override fun onAdLoaded(ad: RewardedAd) {
+                    rewardedAd = ad
                     isLoading = false
 
-                    interstitialAd?.setOnPaidEventListener { adValue ->
-                        onPaid(
-                            adValue = adValue,
-                            responseInfo = interstitialAd?.responseInfo
-                        )
+                    ad.setOnPaidEventListener { adValue ->
+                        onPaid(adValue, ad.responseInfo)
                     }
 
-                    callback.onLoadSuccess()
+                    Log.i(TAG, "Reward loaded")
                 }
 
                 override fun onAdFailedToLoad(error: LoadAdError) {
-                    Log.i(TAG, "onAdFailedToLoad: ${error.message}")
-                    interstitialAd = null
+                    rewardedAd = null
                     isLoading = false
-                    callback.onLoadFailed(error.message)
+                    Log.e(TAG, "Load failed: ${error.message}")
                 }
             }
         )
@@ -82,23 +71,23 @@ class InterstitialAdHelper(
     /* ================= SHOW ================= */
     fun show(
         activity: Activity,
-        callback: InterAdsCallback,
-        loadingTime: Long = 2000L,
-        isReload: Boolean = true
+        isReload: Boolean = true,
+        onReward: () -> Unit,
+        onClosed: (() -> Unit)? = null,
+        onFailed: ((String) -> Unit)? = null,
+        loadingTime: Long = 1500L
     ) {
         if (isShowing) {
-            callback.onShowFailed("Interstitial is showing")
+            onFailed?.invoke("Reward is showing")
             return
         }
 
-        val ad = interstitialAd
+        val ad = rewardedAd
         if (ad == null) {
-            callback.onShowFailed("Interstitial not ready")
-            if (isReload) load(callback)
+            onFailed?.invoke("Reward not ready")
+            if (isReload) load()
             return
         }
-
-        isShowing = true
 
         val dialog = DialogAdsLoading(activity)
         dialog.show()
@@ -108,7 +97,6 @@ class InterstitialAdHelper(
 
             if (activity.isFinishing || activity.isDestroyed) {
                 dialog.dismiss()
-                isShowing = false
                 return@launch
             }
 
@@ -118,41 +106,37 @@ class InterstitialAdHelper(
                 object : FullScreenContentCallback() {
 
                     override fun onAdShowedFullScreenContent() {
-                        (activity.application as App)
-                            .isOtherFullscreenAdShowing = true
-
+                        isShowing = true
+                        (activity.application as App).isOtherFullscreenAdShowing = true
                         logImpression(
                             mediation = getMediationName(ad.responseInfo)
                         )
-
-                        callback.onShowSuccess()
                     }
 
                     override fun onAdDismissedFullScreenContent() {
                         (activity.application as App)
                             .isOtherFullscreenAdShowing = false
                         cleanup()
-                        callback.onAdClosed()
-                        if (isReload) load(callback)
+                        onClosed?.invoke()
+                        if (isReload) load()
                     }
 
                     override fun onAdFailedToShowFullScreenContent(error: AdError) {
                         (activity.application as App)
                             .isOtherFullscreenAdShowing = false
                         cleanup()
-                        callback.onShowFailed(error.message)
-                        if (isReload) load(callback)
+                        onFailed?.invoke(error.message)
+                        if (isReload) load()
                     }
                 }
 
-            ad.show(activity)
+            ad.show(activity) {
+                onReward()
+            }
         }
     }
 
-
-    /* ================= UTILS ================= */
-
-    fun isReady(): Boolean = interstitialAd != null
+    fun isReady(): Boolean = rewardedAd != null
     fun isShowing(): Boolean = isShowing
 
     fun destroy() {
@@ -161,16 +145,9 @@ class InterstitialAdHelper(
     }
 
     private fun cleanup() {
-        interstitialAd?.fullScreenContentCallback = null
-        interstitialAd = null
+        rewardedAd?.fullScreenContentCallback = null
+        rewardedAd = null
         isShowing = false
-    }
-
-    private fun getMediationName(): String {
-        return interstitialAd
-            ?.responseInfo
-            ?.loadedAdapterResponseInfo
-            ?.adSourceName
-            ?: "unknown"
+        AdsGlobalState.isFullscreenAdShowing = false
     }
 }

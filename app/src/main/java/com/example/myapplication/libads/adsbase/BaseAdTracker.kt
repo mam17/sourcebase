@@ -21,7 +21,7 @@ abstract class BaseAdTracker {
         action()
     }
 
-    fun resetTracker() {
+    open fun resetTracker() {
         isPaidLogged = false
         isImpressionLogged = false
     }

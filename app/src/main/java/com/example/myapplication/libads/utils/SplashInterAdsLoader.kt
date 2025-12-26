@@ -58,7 +58,11 @@ class SplashInterAdsLoader(
         val (adUnitId, placement) = adQueue.removeAt(0)
         Log.i(TAG, "Loading inter: $adUnitId")
 
-        val interAds = InterstitialAdHelper(activity, adUnitId, placement)
+        val interAds = InterstitialAdHelper(
+            context = activity,
+            adUnitId = adUnitId,
+            adPlacement = placement
+        )
 
         interAds.load(object : InterAdsCallback {
 

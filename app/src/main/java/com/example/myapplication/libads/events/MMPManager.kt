@@ -55,5 +55,8 @@ object MMPManager {
             Currency.getInstance("USD")
         )
     }
-
+    fun Context.logPaywallShown(source: String) {
+        FirebaseAnalytics.getInstance(this)
+            .logEvent("paywall_shown", bundleOf("source" to source))
+    }
 }

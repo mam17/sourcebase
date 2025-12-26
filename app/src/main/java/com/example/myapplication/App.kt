@@ -1,25 +1,29 @@
 package com.example.myapplication
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import com.appsflyer.AFAdRevenueData
 import com.appsflyer.AdRevenueScheme
 import com.appsflyer.AppsFlyerLib
 import com.appsflyer.MediationNetwork
 import com.appsflyer.attribution.AppsFlyerRequestListener
-import com.example.myapplication.libads.data.AdRevenueData
+import com.example.myapplication.libads.admobs.AppOpenAdHelper
+import com.example.myapplication.libads.utils.AdPlacement
 import com.example.myapplication.utils.AppEx.getDeviceLanguage
 import com.example.myapplication.utils.AppEx.setAppLanguage
 import com.example.myapplication.utils.LocaleHelper
 import com.example.myapplication.utils.SpManager
 import com.facebook.appevents.AppEventsConstants
 import com.facebook.appevents.AppEventsLogger
-import com.google.android.gms.ads.AdValue
-import com.google.android.gms.ads.ResponseInfo
+import com.google.android.gms.ads.MobileAds
 import com.tiktok.TikTokBusinessSdk
 import com.tiktok.appevents.base.EventName
 import com.tiktok.appevents.base.TTBaseEvent
@@ -29,16 +33,21 @@ import dagger.hilt.android.HiltAndroidApp
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Currency
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
 
 @HiltAndroidApp
 @Singleton
-class App : Application() {
+class App : Application(),  Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
     @Inject
     lateinit var spManager: SpManager
+    lateinit var appOpenAdHelper: AppOpenAdHelper
+    private var currentActivity: Activity? = null
+    var adsInitialized = false
+
+    @Volatile
+    var isOtherFullscreenAdShowing = false
 
     companion object {
         @SuppressLint("StaticFieldLeak")
@@ -46,8 +55,26 @@ class App : Application() {
     }
 
     override fun onCreate() {
-        super.onCreate()
+        super<Application>.onCreate()
         context = applicationContext
+
+        initAppsflyer()
+        initTiktokSDK()
+        initAppOpenAds()
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+        registerActivityLifecycleCallbacks(this)
+    }
+    fun initMobileAds() {
+        if (adsInitialized) return
+        MobileAds.initialize(this)
+        adsInitialized = true
+    }
+    fun initAppOpenAds() {
+        appOpenAdHelper = AppOpenAdHelper(
+            context = this,
+            adUnitId = BuildConfig.appopen_resume,
+            adPlacement = AdPlacement.APP_OPEN
+        )
     }
 
 
@@ -64,37 +91,8 @@ class App : Application() {
         super.attachBaseContext(context)
     }
 
-    fun handleAdRevenue(
-        adValue: AdValue,
-        adUnitId: String = "",
-        responseInfo: ResponseInfo? = null,
-        adType: String = "unknown"
-    ) {
-        val revenue = adValue.valueMicros / 1_000_000.0
-
-        if (revenue <= 0) return
-
-        val currencyCode = "USD"
-        val networkAdapter = responseInfo?.loadedAdapterResponseInfo?.adSourceName ?: "admob"
-
-        pushRevAdmobForFacebook(adValue.valueMicros.toDouble())
-
-        logRevForAppsflyer(
-            valueMicroStr = adValue.valueMicros.toString(),
-            networkAdapter = networkAdapter,
-            currencyCode = currencyCode,
-            adType = adType
-        )
-
-        reportRevForTiktok(
-            currencyCode = currencyCode,
-            mValueMicros = adValue.valueMicros.toString(),
-            id = adUnitId.ifEmpty { "unknown_${adType}_${System.currentTimeMillis()}" },
-            adType = adType
-        )
-    }
     private fun initAppsflyer() {
-        val appsflyerDevKey = "X6Kiaov2ZqhCk3fc7dGnCd"
+        val appsflyerDevKey = ""
         AppsFlyerLib.getInstance().init(appsflyerDevKey, null, this)
         AppsFlyerLib.getInstance().setDebugLog(BuildConfig.DEBUG)
         AppsFlyerLib.getInstance().start(this, appsflyerDevKey, object : AppsFlyerRequestListener {
@@ -153,7 +151,7 @@ class App : Application() {
 
     private fun initTiktokSDK() {
 
-        val tiktokAppId = "7573468271706505234"
+        val tiktokAppId = ""
 
         val ttConfig = if (BuildConfig.DEBUG) {
             TikTokBusinessSdk.TTConfig(applicationContext)
@@ -218,26 +216,33 @@ class App : Application() {
         }
     }
 
-
-    fun mapFromAdmob(
-        adValue: AdValue,
-        placement: String,
-        adType: String,
-        responseInfo: ResponseInfo?
-    ): AdRevenueData? {
-
-        if (adValue.valueMicros <= 0) return null
-
-        val mediation = responseInfo
-            ?.loadedAdapterResponseInfo
-            ?.adSourceName ?: "unknown"
-
-        return AdRevenueData(
-            valueMicros = adValue.valueMicros,
-            adType = adType,
-            placement = placement,
-            mediation = mediation
-        )
+    override fun onActivityCreated(activity: Activity, p1: Bundle?) {
     }
 
+    override fun onActivityDestroyed(activity: Activity) {
+    }
+
+    override fun onActivityPaused(activity: Activity) {
+    }
+
+    override fun onActivityResumed(activity: Activity) {
+    }
+
+    override fun onActivitySaveInstanceState(activity: Activity, p1: Bundle) {
+    }
+
+    override fun onActivityStarted(activity: Activity) {
+        currentActivity = activity
+    }
+
+    override fun onActivityStopped(activity: Activity) {
+    }
+
+    override fun onStart(owner: LifecycleOwner) {
+        super.onStart(owner)
+        Log.i("TAG_APP", "onStart: $currentActivity")
+        if (appOpenAdHelper.isReady()) {
+            currentActivity?.let { appOpenAdHelper.showIfAvailable(it) }
+        }
+    }
 }
