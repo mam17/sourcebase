@@ -13,8 +13,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.animation.ScaleAnimation
 import androidx.appcompat.widget.AppCompatImageView
-import com.example.myapplication.R
-import kotlin.let
+import com.vm.vape_prank.R
 
 class RoundImageView @JvmOverloads constructor(
     context: Context,
@@ -28,10 +27,15 @@ class RoundImageView @JvmOverloads constructor(
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val path = Path()
     private val rectF = RectF()
+    private var enableStroke: Boolean = false
+    private var strokeWidth: Float = 0f
+    private var strokeColor: Int = Color.TRANSPARENT
+    private val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+    }
 
     init {
         isClickable = true
-        scaleType = ScaleType.CENTER_CROP
         setWillNotDraw(false)
 
         attrs?.let {
@@ -40,6 +44,9 @@ class RoundImageView @JvmOverloads constructor(
             isOval = ta.getBoolean(R.styleable.RoundImageView_isOval, false)
             bgColor = ta.getColor(R.styleable.RoundImageView_bgColor, Color.TRANSPARENT)
             enableScaleAnim = ta.getBoolean(R.styleable.RoundImageView_enableScaleAnim, true)
+            enableStroke = ta.getBoolean(R.styleable.RoundImageView_enableStroke, false)
+            strokeWidth = ta.getDimension(R.styleable.RoundImageView_imageStrokeWidth, 0f)
+            strokeColor = ta.getColor(R.styleable.RoundImageView_imageStrokeColor, Color.TRANSPARENT)
 
             if (ta.hasValue(R.styleable.RoundImageView_iconTint)) {
                 val tintColor = ta.getColor(R.styleable.RoundImageView_iconTint, Color.TRANSPARENT)
@@ -79,6 +86,21 @@ class RoundImageView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun setStrokeEnable(enable: Boolean) {
+        this.enableStroke = enable
+        invalidate()
+    }
+
+    fun setStrokeWidth(width: Float) {
+        this.strokeWidth = width
+        invalidate()
+    }
+
+    fun setStrokeColor(color: Int) {
+        this.strokeColor = color
+        invalidate()
+    }
+
     override fun onDraw(canvas: Canvas) {
         rectF.set(0f, 0f, width.toFloat(), height.toFloat())
         path.reset()
@@ -91,6 +113,7 @@ class RoundImageView @JvmOverloads constructor(
             path.addRect(rectF, Path.Direction.CW)
         }
 
+        val save = canvas.save()
         canvas.clipPath(path)
 
         if (bgColor != Color.TRANSPARENT) {
@@ -99,6 +122,31 @@ class RoundImageView @JvmOverloads constructor(
         }
 
         super.onDraw(canvas)
+
+        canvas.restoreToCount(save)
+
+        if (enableStroke && strokeWidth > 0f && strokeColor != Color.TRANSPARENT) {
+            strokePaint.color = strokeColor
+            strokePaint.strokeWidth = strokeWidth
+
+            val half = strokeWidth / 2f
+            val strokeRect = RectF(
+                half,
+                half,
+                width - half,
+                height - half
+            )
+
+            val radius = (cornerRadius - half).coerceAtLeast(0f)
+
+            if (isOval) {
+                canvas.drawOval(strokeRect, strokePaint)
+            } else if (cornerRadius > 0f) {
+                canvas.drawRoundRect(strokeRect, radius, radius, strokePaint)
+            } else {
+                canvas.drawRect(strokeRect, strokePaint)
+            }
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -114,11 +162,14 @@ class RoundImageView @JvmOverloads constructor(
 
     private fun startScaleAnim(scale: Float) {
         val anim = ScaleAnimation(
-            scaleX, scale, scaleY, scale,
-            (width / 2).toFloat(), (height / 2).toFloat()
+            1f, scale,
+            1f, scale,
+            (width / 2).toFloat(),
+            (height / 2).toFloat()
         )
         anim.duration = 120
         anim.fillAfter = true
         startAnimation(anim)
     }
+
 }
