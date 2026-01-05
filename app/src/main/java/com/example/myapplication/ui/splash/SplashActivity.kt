@@ -44,8 +44,6 @@ class SplashActivity : BaseActivity<ActivitySplashBinding>() {
     private fun initAds() {
         val app = application as App
         app.initMobileAds()
-        app.appOpenAdHelper.enableShow()
-        app.appOpenAdHelper.load()
 
         SplashInterAdsLoader(
             activity = this@SplashActivity,
@@ -59,5 +57,7 @@ class SplashActivity : BaseActivity<ActivitySplashBinding>() {
 
     private fun gotoMainScreen() {
         MainActivity.start(this)
+//        LanguageActivity.start(this, true)
+//        finish()
     }
 }

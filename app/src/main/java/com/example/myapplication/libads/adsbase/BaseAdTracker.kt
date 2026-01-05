@@ -1,29 +1,27 @@
 package com.example.myapplication.libads.adsbase
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 abstract class BaseAdTracker {
 
-    private var isPaidLogged = false
-    private var isImpressionLogged = false
+    private val isPaidLogged = AtomicBoolean(false)
+    private val isImpressionLogged = AtomicBoolean(false)
 
-    protected fun logPaidOnce(
-        action: () -> Unit
-    ) {
-        if (isPaidLogged) return
-        isPaidLogged = true
-        action()
+    protected fun logPaidOnce(action: () -> Unit) {
+        if (isPaidLogged.compareAndSet(false, true)) {
+            action()
+        }
     }
 
-    protected fun logImpressionOnce(
-        action: () -> Unit
-    ) {
-        if (isImpressionLogged) return
-        isImpressionLogged = true
-        action()
+    protected fun logImpressionOnce(action: () -> Unit) {
+        if (isImpressionLogged.compareAndSet(false, true)) {
+            action()
+        }
     }
 
     open fun resetTracker() {
-        isPaidLogged = false
-        isImpressionLogged = false
+        isPaidLogged.set(false)
+        isImpressionLogged.set(false)
     }
 
 }

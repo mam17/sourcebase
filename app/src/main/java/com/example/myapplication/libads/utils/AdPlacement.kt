@@ -7,5 +7,6 @@ enum class AdPlacement(val value: String) {
     INTER_EXIT("inter_exit"),
     INTER_MAIN("inter_main"),
     REWARD_MAIN("reward_main"),
-    APP_OPEN("app_open")
+    APP_OPEN("app_open"),
+    BANNER_MAIN("banner_main")
 }

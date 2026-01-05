@@ -17,6 +17,8 @@ import com.appsflyer.MediationNetwork
 import com.appsflyer.attribution.AppsFlyerRequestListener
 import com.example.myapplication.libads.admobs.AppOpenAdHelper
 import com.example.myapplication.libads.utils.AdPlacement
+import com.example.myapplication.ui.onboarding.OnBoardingActivity
+import com.example.myapplication.ui.splash.SplashActivity
 import com.example.myapplication.utils.AppEx.getDeviceLanguage
 import com.example.myapplication.utils.AppEx.setAppLanguage
 import com.example.myapplication.utils.LocaleHelper
@@ -42,7 +44,6 @@ import javax.inject.Singleton
 class App : Application(),  Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
     @Inject
     lateinit var spManager: SpManager
-    lateinit var appOpenAdHelper: AppOpenAdHelper
     private var currentActivity: Activity? = null
     var adsInitialized = false
 
@@ -52,6 +53,13 @@ class App : Application(),  Application.ActivityLifecycleCallbacks, DefaultLifec
     companion object {
         @SuppressLint("StaticFieldLeak")
         var context: Context? = null
+
+        @SuppressLint("StaticFieldLeak")
+        private var mInstance: App? = null
+        val instance get() = mInstance
+
+        var appOpenAdHelper: AppOpenAdHelper? = null
+            private set
     }
 
     override fun onCreate() {
@@ -75,6 +83,7 @@ class App : Application(),  Application.ActivityLifecycleCallbacks, DefaultLifec
             adUnitId = BuildConfig.appopen_resume,
             adPlacement = AdPlacement.APP_OPEN
         )
+        appOpenAdHelper?.loadWithFloor()
     }
 
 
@@ -241,8 +250,25 @@ class App : Application(),  Application.ActivityLifecycleCallbacks, DefaultLifec
     override fun onStart(owner: LifecycleOwner) {
         super.onStart(owner)
         Log.i("TAG_APP", "onStart: $currentActivity")
-        if (appOpenAdHelper.isReady()) {
-            currentActivity?.let { appOpenAdHelper.showIfAvailable(it) }
+
+        currentActivity?.let { activity ->
+            val excludedActivities = listOf(
+                SplashActivity::class.java,
+                OnBoardingActivity::class.java
+            )
+
+            if (excludedActivities.contains(activity::class.java)) {
+                Log.i("TAG_APP", "onStart: Skip App Open for ${activity::class.java.simpleName}")
+                return@let
+            }
+
+            if (appOpenAdHelper?.isReady() == true) {
+                appOpenAdHelper?.showIfAvailable(activity)
+            } else {
+                appOpenAdHelper?.loadWithFloor()
+            }
         }
     }
+
+
 }

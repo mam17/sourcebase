@@ -18,14 +18,15 @@ object AdRevenueMapper {
 
         val mediation = responseInfo
             ?.loadedAdapterResponseInfo
-            ?.adSourceName ?: "unknown"
+            ?.adSourceName ?: "AdMob"
 
         return AdRevenueData(
             valueMicros = adValue.valueMicros,
-            currency = "USD",
+            currency = adValue.currencyCode,
             adType = adType,
             placement = placement.value,
-            mediation = mediation
+            mediation = mediation,
+            precision = adValue.precisionType
         )
     }
 }

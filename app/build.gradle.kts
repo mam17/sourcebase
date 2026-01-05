@@ -1,18 +1,23 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.text.SimpleDateFormat
 import java.util.Date
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("com.google.dagger.hilt.android")
-    id("org.jetbrains.kotlin.kapt")
     id("kotlin-parcelize")
-    id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
+    id("org.jetbrains.kotlin.kapt")
+    id("com.google.dagger.hilt.android")
 }
-
+configurations.configureEach {
+    exclude(
+        group = "org.jetbrains.kotlin",
+        module = "kotlin-android-extensions-runtime"
+    )
+}
 android {
     namespace = "com.example.myapplication"
     compileSdk = 36
@@ -21,14 +26,15 @@ android {
         applicationId = "com.example.myapplication"
         minSdk = 24
         //noinspection OldTargetApi
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         val formattedDate = SimpleDateFormat("MM.dd.yyyy").format(Date())
-        base.archivesBaseName = "ControlCenterTheme_v${versionName}(${versionCode})_${formattedDate}"
+        project.extra.set("archivesBaseName", "ControlCenterTheme_v${versionName}(${versionCode})_${formattedDate}")
+
     }
 
     buildTypes {
@@ -67,20 +73,31 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
     }
     buildFeatures {
         viewBinding = true
         buildConfig = true
     }
     bundle {
+        @Suppress("UnstableApiUsage")
         language {
             enableSplit = false
         }
     }
 }
-
+kapt {
+    correctErrorTypes = true
+    arguments {
+        arg("dagger.fastInit", "enabled")
+        arg("dagger.hilt.android.internal.disableAndroidSuperclassValidation", "true")
+        arg("dagger.hilt.android.internal.projectType", "APP")
+        arg("dagger.hilt.internal.useAggregatingRootProcessor", "false")
+    }
+}
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

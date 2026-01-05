@@ -64,7 +64,7 @@ class SplashInterAdsLoader(
             adPlacement = placement
         )
 
-        interAds.load(object : InterAdsCallback {
+        interAds.loadWithFloor(object : InterAdsCallback {
 
             override fun onLoadSuccess() {
                 cancelTimeout()

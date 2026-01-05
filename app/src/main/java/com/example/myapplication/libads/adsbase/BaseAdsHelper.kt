@@ -27,20 +27,31 @@ abstract class BaseAdsHelper(
 
     /* ================= PAID EVENT ================= */
 
-    protected fun onPaid(
-        adValue: AdValue,
-        responseInfo: ResponseInfo?
-    ) {
-        if (paidLogged) return
-        paidLogged = true
+    protected fun onPaid(adValue: AdValue, responseInfo: ResponseInfo?) {
+        logPaidOnce {
+            // Tất cả logic bên trong lambda này chỉ chạy 1 lần nhờ BaseAdTracker
+            AdRevenueMapper.fromAdmob(
+                adValue = adValue,
+                placement = adPlacement,
+                adType = adType,
+                responseInfo = responseInfo
+            )?.let { data ->
+                // 1. Gửi sang MMP (AppsFlyer, FB, TikTok)
+                adRevenueTracker.track(data)
 
-        AdRevenueMapper.fromAdmob(
-            adValue = adValue,
-            placement = adPlacement,
-            adType = adType,
-            responseInfo = responseInfo
-        )?.let {
-            adRevenueTracker.track(it)
+                // 2. Gửi sang Firebase chuẩn (Nên thêm vào để xem báo cáo doanh thu)
+                FirebaseAnalytics.getInstance(context).logEvent(
+                    FirebaseAnalytics.Event.AD_IMPRESSION,
+                    bundleOf(
+                        FirebaseAnalytics.Param.VALUE to data.revenue,
+                        FirebaseAnalytics.Param.CURRENCY to data.currency,
+                        FirebaseAnalytics.Param.AD_PLATFORM to "admob",
+                        FirebaseAnalytics.Param.AD_SOURCE to data.mediation,
+                        FirebaseAnalytics.Param.AD_FORMAT to adType,
+                        FirebaseAnalytics.Param.AD_UNIT_NAME to adPlacement.value
+                    )
+                )
+            }
         }
     }
 
@@ -56,13 +67,13 @@ abstract class BaseAdsHelper(
 
     protected fun logImpression(mediation: String?) {
         logImpressionOnce {
+            // Logic log sự kiện hiển thị (Show Success)
             FirebaseAnalytics.getInstance(context).logEvent(
-                "ad_impression",
+                "ad_impression_custom",
                 bundleOf(
-                    "ad_platform" to "admob",
                     "ad_unit_name" to adPlacement.value,
                     "ad_format" to adType,
-                    "mediation" to (mediation ?: "unknown")
+                    "mediation" to (mediation ?: "AdMob")
                 )
             )
         }
@@ -72,6 +83,6 @@ abstract class BaseAdsHelper(
         return responseInfo
             ?.loadedAdapterResponseInfo
             ?.adSourceName
-            ?: "unknown"
+            ?: "AdMob"
     }
 }
