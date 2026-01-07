@@ -30,8 +30,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         val formattedDate = SimpleDateFormat("MM.dd.yyyy").format(Date())
-        project.extra.set("archivesBaseName", "ControlCenterTheme_v${versionName}(${versionCode})_${formattedDate}")
-
+        base.archivesBaseName = "SourceBase_v${versionName}(${versionCode})_${formattedDate}"
     }
 
     buildTypes {
