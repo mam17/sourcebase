@@ -16,7 +16,6 @@ import com.tiktok.appevents.contents.TTContentsEventConstants
 import com.tiktok.appevents.contents.TTPurchaseEvent
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.Currency
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -67,7 +66,7 @@ class AdRevenueTracker @Inject constructor(
         val additionalParameters = mapOf(
             AdRevenueScheme.AD_TYPE to data.adType,
             "placement" to data.placement,
-            "precision" to data.precision.toString() // Quan trọng cho thuật toán của AppsFlyer
+            "precision" to data.precision.toString()
         )
 
         AppsFlyerLib.getInstance().logAdRevenue(afData, additionalParameters)

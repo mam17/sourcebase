@@ -2,7 +2,6 @@ package com.example.myapplication.libads.events
 
 import android.content.Context
 import androidx.core.os.bundleOf
-import com.example.myapplication.App
 import com.example.myapplication.libads.utils.AdPlacement
 import com.facebook.appevents.AppEventsLogger
 import com.google.android.gms.ads.AdValue
@@ -55,6 +54,7 @@ object MMPManager {
             Currency.getInstance("USD")
         )
     }
+
     fun Context.logPaywallShown(source: String) {
         FirebaseAnalytics.getInstance(this)
             .logEvent("paywall_shown", bundleOf("source" to source))

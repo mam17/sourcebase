@@ -11,7 +11,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.appsflyer.AFAdRevenueData
-import com.appsflyer.AdRevenueScheme
+import com.appsflyer.adrevenue.AppsFlyerAdRevenue
 import com.appsflyer.AppsFlyerLib
 import com.appsflyer.MediationNetwork
 import com.appsflyer.attribution.AppsFlyerRequestListener
@@ -117,6 +117,11 @@ class App : Application(),  Application.ActivityLifecycleCallbacks, DefaultLifec
                 );
             }
         })
+
+        // Init AdRevenue
+        val afRevenue = AppsFlyerAdRevenue.Builder(this)
+            .build()
+        AppsFlyerAdRevenue.initialize(afRevenue)
     }
 
     private fun logRevForAppsflyer(valueMicroStr: String?, networkAdapter: String?, currencyCode: String?, adType: String?) {
@@ -134,7 +139,7 @@ class App : Application(),  Application.ActivityLifecycleCallbacks, DefaultLifec
             )
             AppsFlyerLib.getInstance().logAdRevenue(
                 afAdRevData, mapOf(
-                    AdRevenueScheme.AD_TYPE to adType,
+                    "ad_type" to adType,
                 )
             )
         }

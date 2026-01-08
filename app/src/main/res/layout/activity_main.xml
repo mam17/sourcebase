@@ -11,6 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Show reward"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
@@ -18,9 +19,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Show inter"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnShowReward" />
 
-    <include
-        android:id="@+id/adBanner"
-        layout="@layout/layout_ads_banner" />
+<!--    <include-->
+<!--        android:id="@+id/adBanner"-->
+<!--        layout="@layout/layout_ads_banner" />-->
+
+    <FrameLayout
+        android:id="@+id/bannerContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

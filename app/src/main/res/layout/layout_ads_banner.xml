@@ -1,55 +1,54 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:layout_constraintBottom_toBottomOf="parent"
-    android:padding="@dimen/size1">
+    android:padding="@dimen/size1"
+    app:layout_constraintBottom_toBottomOf="parent">
 
     <com.facebook.shimmer.ShimmerFrameLayout
         android:id="@+id/shimmerBanner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Layout shimmer placeholder -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <View
                 android:layout_width="@dimen/size46"
                 android:layout_height="@dimen/size46"
-                android:background="@color/gray"
-                android:layout_marginStart="@dimen/size8"/>
+                android:layout_marginStart="@dimen/size8"
+                android:background="@color/gray" />
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="@dimen/size46"
+                android:layout_marginStart="@dimen/size8"
                 android:layout_weight="1"
-                android:background="@color/gray"
-                android:layout_marginStart="@dimen/size8"/>
+                android:background="@color/gray" />
 
             <View
                 android:layout_width="@dimen/size55"
                 android:layout_height="@dimen/size46"
-                android:background="@color/gray"
-                android:layout_marginStart="@dimen/size8"/>
+                android:layout_marginStart="@dimen/size8"
+                android:background="@color/gray" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/tvAd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/bg_ad_text"
+            android:paddingHorizontal="@dimen/size6"
             android:text="Ad"
             android:textColor="@color/white"
-            android:textSize="10sp"
-            android:paddingHorizontal="@dimen/size6"
-            android:background="@drawable/bg_ad_text"/>
+            android:textSize="10sp" />
     </com.facebook.shimmer.ShimmerFrameLayout>
 
     <FrameLayout
         android:id="@+id/bannerContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-</RelativeLayout>
+        android:layout_height="wrap_content" />
+</FrameLayout>

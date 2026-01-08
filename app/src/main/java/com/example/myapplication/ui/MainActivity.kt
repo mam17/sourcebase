@@ -2,13 +2,14 @@ package com.example.myapplication.ui
 
 import android.app.Activity
 import android.content.Intent
-import com.example.myapplication.App
+import android.view.View
 import com.example.myapplication.BuildConfig
 import com.example.myapplication.base.activity.BaseActivity
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.example.myapplication.libads.admobs.BannerAdHelper
 import com.example.myapplication.libads.admobs.InterstitialAdHelper
 import com.example.myapplication.libads.admobs.RewardedAdHelper
+import com.example.myapplication.libads.interfaces.BannerShimmerController
 import com.example.myapplication.libads.utils.AdPlacement
 import com.example.myapplication.libads.utils.BannerGravity
 import com.example.myapplication.ui.language.LanguageActivity
@@ -44,11 +45,14 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             adUnitIdFloor = BuildConfig.banner_splash,
             adPlacement = AdPlacement.BANNER_MAIN
         )
+
         bannerAd.loadBanner(
-            container = viewBinding.adBanner.bannerContainer,
+            container = viewBinding.bannerContainer,
             isCollapsible = true,
             gravity = BannerGravity.BOTTOM
         )
+
+
 
         interstitialAd = InterstitialAdHelper(
             context = this,

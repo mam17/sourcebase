@@ -153,6 +153,10 @@ dependencies {
     //Dot
     implementation(libs.dotsindicator)
 
+    //AppsFlyer
+    implementation(libs.appsflyer.sdk)
+    implementation("com.appsflyer:adrevenue:6.9.1")
+    implementation(libs.installreferrer)
     //AdMob
     implementation("com.google.android.gms:play-services-ads:24.7.0")
     implementation("com.google.android.gms:play-services-appset:16.1.0")
