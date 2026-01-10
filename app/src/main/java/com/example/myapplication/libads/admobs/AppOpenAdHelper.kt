@@ -3,13 +3,18 @@ package com.example.myapplication.libads.admobs
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.App
 import com.example.myapplication.libads.adsbase.BaseAdsHelper
+import com.example.myapplication.libads.helper.DialogAdsLoading
 import com.example.myapplication.libads.interfaces.InterAdsCallback
 import com.example.myapplication.libads.utils.AdPlacement
 import com.example.myapplication.libads.utils.AdsGlobalState
 import com.google.android.gms.ads.*
 import com.google.android.gms.ads.appopen.AppOpenAd
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class AppOpenAdHelper(
     context: Context,
@@ -94,7 +99,7 @@ class AppOpenAdHelper(
 
     /* ================= SHOW ================= */
 
-    fun showIfAvailable(activity: Activity) {
+    fun showIfAvailable(activity: Activity, loadingTime: Long = 2000L) {
         if (!canShow) {
             Log.i(TAG, "Show disabled")
             return
@@ -116,26 +121,40 @@ class AppOpenAdHelper(
             return
         }
 
-        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdShowedFullScreenContent() {
-                isShowing = true
-                AdsGlobalState.isFullscreenAdShowing = true
-                logImpression(mediation = getMediationName(ad.responseInfo))
+        val dialog = DialogAdsLoading(activity)
+        dialog.show()
+
+        (activity as? LifecycleOwner)?.lifecycleScope?.launch {
+            delay(loadingTime)
+
+            if (activity.isFinishing || activity.isDestroyed) {
+                if (dialog.isShowing) dialog.dismiss()
+                return@launch
             }
 
-            override fun onAdDismissedFullScreenContent() {
-                cleanup()
-                loadWithFloor()
+            dialog.dismiss()
+
+            ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+                override fun onAdShowedFullScreenContent() {
+                    isShowing = true
+                    AdsGlobalState.isFullscreenAdShowing = true
+                    logImpression(mediation = getMediationName(ad.responseInfo))
+                }
+
+                override fun onAdDismissedFullScreenContent() {
+                    cleanup()
+                    loadWithFloor()
+                }
+
+                override fun onAdFailedToShowFullScreenContent(error: AdError) {
+                    Log.e(TAG, "Show failed: ${error.message}")
+                    cleanup()
+                    loadWithFloor()
+                }
             }
 
-            override fun onAdFailedToShowFullScreenContent(error: AdError) {
-                Log.e(TAG, "Show failed: ${error.message}")
-                cleanup()
-                loadWithFloor()
-            }
+            ad.show(activity)
         }
-
-        ad.show(activity)
     }
 
     /* ================= UTILS ================= */

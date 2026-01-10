@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.language.LanguageActivity">
+
     <include
         android:id="@+id/toolBarLanguage"
         layout="@layout/layout_toolbar" />
@@ -17,9 +18,19 @@
         android:orientation="vertical"
         android:paddingHorizontal="@dimen/size16"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-       app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolBarLanguage"
         tools:listitem="@layout/item_language" />
+
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/shimmerNativeFull"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include
+            android:id="@+id/flNativeContainerFull"
+            layout="@layout/ad_unified_full_screen" />
+    </com.facebook.shimmer.ShimmerFrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,6 +8,7 @@ import com.example.myapplication.base.activity.BaseActivity
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.example.myapplication.libads.admobs.BannerAdHelper
 import com.example.myapplication.libads.admobs.InterstitialAdHelper
+import com.example.myapplication.libads.admobs.NativeAdHelper
 import com.example.myapplication.libads.admobs.RewardedAdHelper
 import com.example.myapplication.libads.interfaces.BannerShimmerController
 import com.example.myapplication.libads.utils.AdPlacement
@@ -31,6 +32,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     private lateinit var interstitialAd: InterstitialAdHelper
     private lateinit var rewardedAd: RewardedAdHelper
     private lateinit var bannerAd: BannerAdHelper
+    private lateinit var nativeAdHelper: NativeAdHelper
 
     override fun initViews() {
         super.initViews()
@@ -47,12 +49,21 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         )
 
         bannerAd.loadBanner(
-            container = viewBinding.bannerContainer,
+            parent = viewBinding.adBanner.shimmerBanner,
+            container = viewBinding.adBanner.shimmerBanner,
             isCollapsible = true,
             gravity = BannerGravity.BOTTOM
         )
 
-
+        nativeAdHelper = NativeAdHelper(
+            activity = this,
+            adUnitId = BuildConfig.native_home,
+            adUnitIdFloor = BuildConfig.native_home,
+            adPlacement = AdPlacement.NATIVE_MAIN
+        )
+        nativeAdHelper.loadNativeAd(
+            parent = viewBinding.flNativeContainer.root,
+            shimmer = viewBinding.shimmerNative)
 
         interstitialAd = InterstitialAdHelper(
             context = this,

@@ -1,17 +1,20 @@
 package com.example.myapplication.libads.admobs
 
 import android.app.Activity
-
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.example.myapplication.libads.adsbase.BaseAdsHelper
 import com.example.myapplication.libads.utils.AdPlacement
 import com.example.myapplication.libads.utils.BannerGravity
+import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.ads.mediation.admob.AdMobAdapter
-import com.google.android.gms.ads.*
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.LoadAdError
 
 class BannerAdHelper(
     private val activity: Activity,
@@ -26,53 +29,50 @@ class BannerAdHelper(
 
     private var adView: AdView? = null
     private var isLoading = false
+    private var collapsiblePositionType = BannerGravity.BOTTOM
 
     companion object {
         private const val TAG = "BannerAdHelper"
     }
 
     fun loadBanner(
-        container: ViewGroup,
+        parent: ShimmerFrameLayout,
+        container: FrameLayout,
         isCollapsible: Boolean = false,
         gravity: BannerGravity = BannerGravity.BOTTOM
     ) {
         if (isLoading) return
-
-        val adSize = getAdSize(activity, container)
-
-        // Log thông tin AdSize - Cực kỳ quan trọng vì Collapsible chỉ chạy với Adaptive Size
-        Log.d(TAG, "--- Start Load Banner ---")
-        Log.d(TAG, "AdSize: $adSize | Width: ${adSize.width} | IsCollapsible: $isCollapsible")
-
-        loadWithFloor(container, adSize, isCollapsible, gravity)
+        collapsiblePositionType = gravity
+        val adSize = getAdSize(activity, parent)
+        loadWithFloor(parent,container, adSize, isCollapsible)
     }
 
     private fun loadWithFloor(
-        container: ViewGroup,
+        parent: ShimmerFrameLayout,
+        container: FrameLayout,
         adSize: AdSize,
-        isCollapsible: Boolean,
-        gravity: BannerGravity
+        isCollapsible: Boolean
     ) {
         if (adUnitIdFloor == null) {
-            load(adUnitId, container, adSize, isCollapsible, gravity)
+            load(adUnitId, parent, container,adSize, isCollapsible)
             return
         }
 
-        load(adUnitIdFloor, container, adSize, isCollapsible, gravity, object : AdListener() {
+        load(adUnitIdFloor, parent, container,adSize, isCollapsible, object : AdListener() {
             override fun onAdFailedToLoad(error: LoadAdError) {
                 Log.w(TAG, "Floor ID Failed: $adUnitIdFloor | Error: ${error.message}")
                 Log.i(TAG, "Switching to Normal ID: $adUnitId")
-                load(adUnitId, container, adSize, isCollapsible, gravity)
+                load(adUnitId, parent, container,adSize, isCollapsible)
             }
         })
     }
 
     private fun load(
         targetAdUnitId: String,
-        container: ViewGroup,
+        parent: ShimmerFrameLayout,
+        container: FrameLayout,
         adSize: AdSize,
         isCollapsible: Boolean,
-        gravity: BannerGravity,
         internalListener: AdListener? = null
     ) {
         destroy()
@@ -83,37 +83,27 @@ class BannerAdHelper(
             setAdSize(adSize)
             setAdUnitId(targetAdUnitId)
 
-            // Log AdRequest details
-            val adRequest = if (isCollapsible) {
-                val extras = Bundle().apply {
-                    putString("collapsible", gravity.value)
-                }
-                Log.d(TAG, "Requesting Collapsible Banner with gravity: ${gravity.value}")
-                AdRequest.Builder()
-                    .addNetworkExtrasBundle(AdMobAdapter::class.java, extras)
-                    .build()
-            } else {
-                AdRequest.Builder().build()
-            }
+            val request = buildAdRequest(isCollapsible)
 
             adListener = object : AdListener() {
                 override fun onAdLoaded() {
                     this@BannerAdHelper.isLoading = false
+                    Log.i(TAG, "Loaded OK: $targetAdUnitId")
+                    adView = this@apply
+
                     container.removeAllViews()
                     container.addView(this@apply)
+                    parent.hideShimmer()
+
                     internalListener?.onAdLoaded()
 
-                    // Kiểm tra xem thực tế AdMob có trả về Collapsible không
-                    // Banner Collapsible thường có extras đặc biệt trong response
                     val responseExtras = responseInfo?.responseExtras
                     Log.i(TAG, "Ad Loaded Successfully!")
-                    Log.d(TAG, "Mediation Adapter: ${responseInfo?.loadedAdapterResponseInfo?.adSourceName}")
-                    Log.d(TAG, "Response Extras: $responseExtras")
-
-                    this@apply.layoutParams = FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    Log.d(
+                        TAG,
+                        "Mediation Adapter: ${responseInfo?.loadedAdapterResponseInfo?.adSourceName}"
                     )
+                    Log.d(TAG, "Response Extras: $responseExtras")
                 }
 
                 override fun onAdFailedToLoad(error: LoadAdError) {
@@ -121,6 +111,8 @@ class BannerAdHelper(
                     internalListener?.onAdFailedToLoad(error)
                     Log.e(TAG, "Ad Failed to Load: $targetAdUnitId")
                     Log.e(TAG, "Error Code: ${error.code} | Message: ${error.message}")
+                    container.removeAllViews()
+                    parent.hideShimmer()
                 }
 
                 override fun onAdImpression() {
@@ -137,8 +129,22 @@ class BannerAdHelper(
             setOnPaidEventListener { onPaid(it, responseInfo) }
 
             Log.d(TAG, "Calling loadAd for ID: $targetAdUnitId")
-            loadAd(adRequest)
+            loadAd(request)
         }
+    }
+
+    private fun buildAdRequest(isCollapsible: Boolean): AdRequest {
+        val builder = AdRequest.Builder()
+        if (isCollapsible) {
+            val bundle = Bundle().apply {
+                putString(
+                    "collapsible",
+                    if (collapsiblePositionType != BannerGravity.BOTTOM) "top" else "bottom"
+                )
+            }
+            builder.addNetworkExtrasBundle(AdMobAdapter::class.java, bundle)
+        }
+        return builder.build()
     }
 
     fun getAdSize(activity: Activity, container: View): AdSize {
@@ -150,8 +156,10 @@ class BannerAdHelper(
 
         val adWidth = (adWidthPixels / density).toInt()
 
-        // Nếu adWidth quá nhỏ (do container chưa đo xong), AdMob có thể không trả về Collapsible
-        if (adWidth <= 0) Log.e(TAG, "Warning: adWidth is 0 or negative. Adaptive Banner might fail.")
+        if (adWidth <= 0) Log.e(
+            TAG,
+            "Warning: adWidth is 0 or negative. Adaptive Banner might fail."
+        )
 
         return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity, adWidth)
     }

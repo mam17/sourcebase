@@ -9,9 +9,13 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.myapplication.BuildConfig
 import com.example.myapplication.R
 import com.example.myapplication.base.activity.BaseActivity
 import com.example.myapplication.databinding.ActivityLanguageBinding
+import com.example.myapplication.libads.admobs.NativeAdHelper
+import com.example.myapplication.libads.admobs.NativeAdHelperFullScreen
+import com.example.myapplication.libads.utils.AdPlacement
 import com.example.myapplication.ui.MainActivity
 import com.example.myapplication.ui.onboarding.OnBoardingActivity
 import com.example.myapplication.utils.AppEx.setAppLanguage
@@ -39,10 +43,20 @@ class LanguageActivity : BaseActivity<ActivityLanguageBinding>() {
             }
         }
     }
+    private lateinit var nativeAdHelper: NativeAdHelperFullScreen
 
     override fun initViews() {
-        viewBinding.apply {
+        nativeAdHelper = NativeAdHelperFullScreen(
+            activity = this,
+            adUnitId = BuildConfig.native_home,
+            adUnitIdFloor = BuildConfig.native_home,
+            adPlacement = AdPlacement.NATIVE_MAIN
+        )
+        nativeAdHelper.loadAndShow(
+            parent = viewBinding.flNativeContainerFull.root,
+            shimmer = viewBinding.shimmerNativeFull)
 
+        viewBinding.apply {
             fromSplash = intent.getBooleanExtra(KEY_FROM_SPLASH, false)
             if (!fromSplash) {
                 toolBarLanguage.btnBack.visible()
