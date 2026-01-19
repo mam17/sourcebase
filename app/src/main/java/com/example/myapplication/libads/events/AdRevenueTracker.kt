@@ -53,6 +53,19 @@ class AdRevenueTracker @Inject constructor(
             data.revenue,
             params
         )
+
+        // Add Purchase event for ROAS
+        val currency = try {
+            java.util.Currency.getInstance(data.currency)
+        } catch (e: Exception) {
+            java.util.Currency.getInstance("USD")
+        }
+
+        fbLogger.logPurchase(
+            BigDecimal(data.revenue),
+            currency,
+            params
+        )
     }
 
     private fun trackAppsFlyer(data: AdRevenueData) {

@@ -124,44 +124,7 @@ class App : Application(),  Application.ActivityLifecycleCallbacks, DefaultLifec
         AppsFlyerAdRevenue.initialize(afRevenue)
     }
 
-    private fun logRevForAppsflyer(valueMicroStr: String?, networkAdapter: String?, currencyCode: String?, adType: String?) {
-        runCatching {
-            val valueMicro = (valueMicroStr?.toDoubleOrNull() ?: 0.0) / 1_000_000
 
-            if (valueMicro == 0.0)
-                return
-
-            val afAdRevData = AFAdRevenueData(
-                monetizationNetwork = networkAdapter ?: "",
-                mediationNetwork = MediationNetwork.GOOGLE_ADMOB,
-                currencyIso4217Code = currencyCode ?: "USD",
-                revenue = valueMicro
-            )
-            AppsFlyerLib.getInstance().logAdRevenue(
-                afAdRevData, mapOf(
-                    "ad_type" to adType,
-                )
-            )
-        }
-    }
-
-    private fun pushRevAdmobForFacebook(valueMicros: Double) {
-        val value = valueMicros / 1_000_000.0
-
-        // Log purchase event
-        AppEventsLogger
-            .newLogger(this)
-            .logPurchase(BigDecimal.valueOf(value), Currency.getInstance("USD"))
-
-        // Log ad impression event
-        val bundle = Bundle().apply {
-            putString(AppEventsConstants.EVENT_PARAM_CURRENCY, "USD")
-        }
-
-        AppEventsLogger
-            .newLogger(this)
-            .logEvent(AppEventsConstants.EVENT_NAME_AD_IMPRESSION, value, bundle)
-    }
 
     private fun initTiktokSDK() {
 
