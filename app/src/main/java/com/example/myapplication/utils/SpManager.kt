@@ -2,94 +2,123 @@ package com.example.myapplication.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.example.myapplication.R
 import com.example.myapplication.domain.layer.LanguageModel
 import com.example.myapplication.utils.AppEx.toLanguageModel
 import com.google.gson.Gson
+import javax.inject.Inject
 
-class SpManager(private val preferences: SharedPreferences) {
+class SpManager @Inject constructor(private val preferences: SharedPreferences) {
     companion object {
         private var instance: SpManager? = null
 
         fun getInstance(context: Context): SpManager {
-            if (instance == null) {
-                instance =
-                    SpManager(context.getSharedPreferences("transparent", Context.MODE_PRIVATE))
+            return instance ?: synchronized(this) {
+                instance ?: SpManager(
+                    context.applicationContext.getSharedPreferences("transparent", Context.MODE_PRIVATE)
+                ).also { instance = it }
             }
-            return instance!!
         }
     }
 
     fun getInt(key: String, defaultValue: Int): Int = preferences.getInt(key, defaultValue)
 
     fun putInt(key: String, value: Int) {
-        val editor = preferences.edit()
-        editor.putInt(key, value)
-        editor.apply()
+        preferences.edit {
+            putInt(key, value)
+        }
     }
 
     fun putBoolean(key: String, value: Boolean) {
-        val editor = preferences.edit()
-        editor.putBoolean(key, value)
-        editor.apply()
+        preferences.edit {
+            putBoolean(key, value)
+        }
     }
 
     fun getBoolean(key: String, defaultValue: Boolean): Boolean =
         preferences.getBoolean(key, defaultValue)
 
-
     fun getLong(key: String, defaultValue: Long): Long =
         preferences.getLong(key, defaultValue)
 
     fun putLong(key: String, value: Long) {
-        val editor = preferences.edit()
-        editor.putLong(key, value)
-        editor.apply()
+        preferences.edit {
+            putLong(key, value)
+        }
     }
 
     fun getString(key: String, defaultValue: String): String? =
         preferences.getString(key, defaultValue)
 
     fun putString(key: String, value: String) {
-        val editor = preferences.edit()
-        editor.putString(key, value)
-        editor.apply()
+        preferences.edit {
+            putString(key, value)
+        }
     }
 
     fun saveLanguage(languageModel: LanguageModel) {
-        preferences.edit().putString(Constant.KEY_SP_CURRENT_LANGUAGE, Gson().toJson(languageModel))
-            .apply()
+        preferences.edit {
+            putString(Constant.KEY_SP_CURRENT_LANGUAGE, Gson().toJson(languageModel))
+        }
     }
 
     fun getLanguage(): LanguageModel {
-        return runCatching {
-            preferences.getString(Constant.KEY_SP_CURRENT_LANGUAGE, "")?.toLanguageModel()
-        }.getOrNull() ?: LanguageModel("en", R.drawable.ic_lang_english, R.string.txt_english)
+        val defaultLanguage = LanguageModel("en", R.drawable.ic_lang_english, R.string.txt_english)
+
+        val json = preferences.getString(Constant.KEY_SP_CURRENT_LANGUAGE, null)
+
+        if (json.isNullOrEmpty()) {
+            return defaultLanguage
+        }
+
+        return try {
+            json.toLanguageModel() ?: defaultLanguage
+        } catch (e: Exception) {
+            defaultLanguage
+        }
     }
 
     fun setUMPShowed(showed: Boolean) {
-        preferences.edit().putBoolean(Constant.KEY_SP_UMP_SHOWED, showed).apply()
+        preferences.edit { putBoolean(Constant.KEY_SP_UMP_SHOWED, showed) }
     }
 
     fun isUMPShowed(): Boolean {
-        return preferences.getBoolean(Constant.KEY_SP_UMP_SHOWED, false)
+        return this.preferences.getBoolean(Constant.KEY_SP_UMP_SHOWED, false)
     }
 
     fun setSettingUMPShowing(b: Boolean) {
-        preferences.edit().putBoolean(Constant.KEY_SP_UMP_SETTING_SHOWED, b).apply()
+        preferences.edit { putBoolean(Constant.KEY_SP_UMP_SETTING_SHOWED, b) }
     }
 
     fun isSettingUMPShowing(): Boolean {
         return preferences.getBoolean(Constant.KEY_SP_UMP_SETTING_SHOWED, false)
     }
 
-
     fun saveFirstOpenApp() {
-        preferences.edit().putBoolean(Constant.KEY_SP_SHOW_ONBOARDING, false).apply()
+        preferences.edit { putBoolean(Constant.KEY_SP_SHOW_ONBOARDING, false) }
     }
 
     fun getFirstOpenApp(): Boolean {
         return preferences.getBoolean(Constant.KEY_SP_SHOW_ONBOARDING, true)
     }
 
+    fun <T> saveObject(key: String, value: T) {
+        preferences.edit {
+            putString(key, Gson().toJson(value))
+        }
+    }
+
+    fun <T> getObject(key: String, clazz: Class<T>): T? {
+        val json = preferences.getString(key, null)
+        return if (json.isNullOrEmpty()) {
+            null
+        } else {
+            try {
+                Gson().fromJson(json, clazz)
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
 }

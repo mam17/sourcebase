@@ -13,7 +13,8 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.animation.ScaleAnimation
 import androidx.appcompat.widget.AppCompatImageView
-import com.vm.vape_prank.R
+import com.example.myapplication.R
+import androidx.core.content.withStyledAttributes
 
 class RoundImageView @JvmOverloads constructor(
     context: Context,
@@ -39,21 +40,21 @@ class RoundImageView @JvmOverloads constructor(
         setWillNotDraw(false)
 
         attrs?.let {
-            val ta = context.obtainStyledAttributes(it, R.styleable.RoundImageView)
-            cornerRadius = ta.getDimension(R.styleable.RoundImageView_cornerRadius, 0f)
-            isOval = ta.getBoolean(R.styleable.RoundImageView_isOval, false)
-            bgColor = ta.getColor(R.styleable.RoundImageView_bgColor, Color.TRANSPARENT)
-            enableScaleAnim = ta.getBoolean(R.styleable.RoundImageView_enableScaleAnim, true)
-            enableStroke = ta.getBoolean(R.styleable.RoundImageView_enableStroke, false)
-            strokeWidth = ta.getDimension(R.styleable.RoundImageView_imageStrokeWidth, 0f)
-            strokeColor = ta.getColor(R.styleable.RoundImageView_imageStrokeColor, Color.TRANSPARENT)
+            context.withStyledAttributes(it, R.styleable.RoundImageView) {
+                cornerRadius = getDimension(R.styleable.RoundImageView_cornerRadius, 0f)
+                isOval = getBoolean(R.styleable.RoundImageView_isOval, false)
+                bgColor = getColor(R.styleable.RoundImageView_bgColor, Color.TRANSPARENT)
+                enableScaleAnim = getBoolean(R.styleable.RoundImageView_enableScaleAnim, true)
+                enableStroke = getBoolean(R.styleable.RoundImageView_enableStroke, false)
+                strokeWidth = getDimension(R.styleable.RoundImageView_imageStrokeWidth, 0f)
+                strokeColor = getColor(R.styleable.RoundImageView_imageStrokeColor, Color.TRANSPARENT)
 
-            if (ta.hasValue(R.styleable.RoundImageView_iconTint)) {
-                val tintColor = ta.getColor(R.styleable.RoundImageView_iconTint, Color.TRANSPARENT)
-                setColorFilter(tintColor, PorterDuff.Mode.SRC_IN)
+                if (hasValue(R.styleable.RoundImageView_iconTint)) {
+                    val tintColor = getColor(R.styleable.RoundImageView_iconTint, Color.TRANSPARENT)
+                    setColorFilter(tintColor, PorterDuff.Mode.SRC_IN)
+                }
+
             }
-
-            ta.recycle()
         }
     }
 
@@ -101,6 +102,7 @@ class RoundImageView @JvmOverloads constructor(
         invalidate()
     }
 
+    @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
         rectF.set(0f, 0f, width.toFloat(), height.toFloat())
         path.reset()

@@ -69,7 +69,8 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
     private fun setupLanguage() {
         val language: String = SpManager.getInstance(this).getLanguage().languageCode
         if (language.isNotEmpty()) {
-            val locale = Locale(language.lowercase(Locale.getDefault()))
+            val locale = Locale.forLanguageTag(language.lowercase(Locale.getDefault()))
+
             Locale.setDefault(locale)
             val config = resources.configuration
             config.setLocale(locale)
@@ -169,6 +170,5 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
             v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom)
             insets
         }
-
     }
 }

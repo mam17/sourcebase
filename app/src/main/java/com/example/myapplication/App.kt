@@ -32,15 +32,29 @@ class App : Application() {
 
 
     override fun onConfigurationChanged(newConfig: Configuration) {
-        val locale = getDeviceLanguage()
+        getDeviceLanguage()
         val language = spManager.getLanguage()
         LocaleHelper.onAttach(this, language.languageCode)
         super.onConfigurationChanged(newConfig)
     }
 
     override fun attachBaseContext(newBase: Context?) {
-        val languageCode = newBase?.let { SpManager.getInstance(it).getLanguage().languageCode }
-        val context = languageCode?.let { newBase.setAppLanguage(it) }
-        super.attachBaseContext(context)
+        if (newBase != null) {
+            val prefs = newBase.getSharedPreferences("transparent", MODE_PRIVATE)
+
+            val languageJson = prefs.getString("key_sp_current_language", "")
+
+            val languageCode = if (!languageJson.isNullOrEmpty()) {
+                val regex = "\"languageCode\":\"([^\"]+)\"".toRegex()
+                regex.find(languageJson)?.groups?.get(1)?.value ?: "en"
+            } else {
+                "en"
+            }
+
+            val updatedContext = newBase.setAppLanguage(languageCode)
+            super.attachBaseContext(updatedContext)
+        } else {
+            super.attachBaseContext(newBase)
+        }
     }
 }
