@@ -1,16 +1,15 @@
-package com.example.myapplication.base.adapter
+package com.example.myapplication.base.adapter.multi
 
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView.Adapter
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import androidx.recyclerview.widget.RecyclerView
 
-abstract class BaseMultiTypeViewAdapter<T> : Adapter<ViewHolder>() {
+abstract class BaseMultiTypeViewAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val dataSet by lazy {
         initData()
     }
     var onClick: ((T) -> Unit)? = null
 
-    abstract fun getViewHolder(parent: ViewGroup, viewType: Int): ViewHolder
+    abstract fun getViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder
 
     abstract fun getViewType(position: Int): Int
 
@@ -22,11 +21,11 @@ abstract class BaseMultiTypeViewAdapter<T> : Adapter<ViewHolder>() {
         return getViewType(position)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return getViewHolder(parent, viewType)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         binData(holder, dataSet[position], position)
     }
 
@@ -40,7 +39,7 @@ abstract class BaseMultiTypeViewAdapter<T> : Adapter<ViewHolder>() {
         return dataSet
     }
 
-    open fun binData(viewHolder: ViewHolder, item: T, position: Int){}
+    open fun binData(viewHolder: RecyclerView.ViewHolder, item: T, position: Int){}
 
     open fun initData(): ArrayList<T> {
         return arrayListOf()

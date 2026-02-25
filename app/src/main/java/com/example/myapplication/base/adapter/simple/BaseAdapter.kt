@@ -1,4 +1,4 @@
-package com.example.myapplication.base.adapter
+package com.example.myapplication.base.adapter.simple
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView

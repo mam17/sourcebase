@@ -2,7 +2,7 @@ package com.example.myapplication.ui.onboarding
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import com.example.myapplication.base.adapter.BaseAdapter
+import com.example.myapplication.base.adapter.simple.BaseAdapter
 import com.example.myapplication.databinding.ItemOnboardingBinding
 import com.example.myapplication.domain.layer.OnboardingModel
 
