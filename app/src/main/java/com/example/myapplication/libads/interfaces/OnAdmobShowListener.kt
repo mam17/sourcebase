@@ -1,6 +1,7 @@
 package com.example.myapplication.libads.interfaces
 
 interface OnAdmobShowListener {
-        fun onShow()
-        fun onError(e: String)
-    }
+    fun onShow()
+    fun onError(e: String)
+    fun onClosed() {}
+}

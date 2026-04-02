@@ -4,71 +4,85 @@ import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 data class AdConfig(
-
-    // -------- App Open Ads --------
     @SerializedName("appopen_resume")
-    @Expose var enableAppOpenResume: Boolean = true,
+    @Expose var appopen_resume: AdUnitConfig = AdUnitConfig(),
 
-    // -------- Interstitial Ads --------
     @SerializedName("inter_splash")
-    @Expose var enableInterSplash: Boolean = true,
+    @Expose var inter_splash: AdUnitConfig = AdUnitConfig(),
 
     @SerializedName("inter_splash_2f")
-    @Expose var enableInterSplash2F: Boolean = true,
+    @Expose var inter_splash_2f: AdUnitConfig = AdUnitConfig(),
 
-    @SerializedName("inter_switch")
-    @Expose var enableInterSwitch: Boolean = true,
+    @SerializedName("inter_home")
+    @Expose var inter_home: AdUnitConfig = AdUnitConfig(),
 
-    // -------- Native Ads --------
-    @SerializedName("native_fullscreen_1_1")
-    @Expose var enableNativeFullscreen11: Boolean = true,
+    @SerializedName("inter_home_2f")
+    @Expose var inter_home_2f: AdUnitConfig = AdUnitConfig(),
 
-    @SerializedName("native_full_screen_1_2")
-    @Expose var enableNativeFullscreen12: Boolean = true,
+    @SerializedName("inter_back")
+    @Expose var inter_back: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("native_fs_splash")
+    @Expose var native_fs_splash: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("native_fs_splash_2f")
+    @Expose var native_fs_splash_2f: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("native_fs_splash_2")
+    @Expose var native_fs_splash_2: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("native_fs_splash_2_2f")
+    @Expose var native_fs_splash_2_2f: AdUnitConfig = AdUnitConfig(),
 
     @SerializedName("native_language_1_1")
-    @Expose var enableNativeLanguage11: Boolean = true,
+    @Expose var native_language_1_1: AdUnitConfig = AdUnitConfig(),
 
-    @SerializedName("native_onboarding")
-    @Expose var enableNativeOnboarding: Boolean = true,
-
-    @SerializedName("native_permission")
-    @Expose var enableNativePermission: Boolean = true,
-
-    @SerializedName("native_home")
-    @Expose var enableNativeHome: Boolean = true,
+    @SerializedName("native_language_1_2")
+    @Expose var native_language_1_2: AdUnitConfig = AdUnitConfig(),
 
     @SerializedName("native_language_2_1")
-    @Expose var enableNativeLanguage21: Boolean = true,
+    @Expose var native_language_2_1: AdUnitConfig = AdUnitConfig(),
 
-    // -------- Reward Ads --------
-    @SerializedName("reward_home")
-    @Expose var enableRewardHome: Boolean = true,
+    @SerializedName("native_language_2_2")
+    @Expose var native_language_2_2: AdUnitConfig = AdUnitConfig(),
 
-    // -------- Banner Ads --------
+    @SerializedName("native_home")
+    @Expose var native_home: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("native_feature")
+    @Expose var native_feature: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("native_fs_1_1")
+    @Expose var native_fs_1_1: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("native_fs_1_1f")
+    @Expose var native_fs_1_1f: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("native_fs_1_2")
+    @Expose var native_fs_1_2: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("native_fs_1_2f")
+    @Expose var native_fs_1_2f: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("native_fs_2_1")
+    @Expose var native_fs_2_1: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("native_fs_2_1f")
+    @Expose var native_fs_2_1f: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("native_fs_2_2")
+    @Expose var native_fs_2_2: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("native_fs_2_2f")
+    @Expose var native_fs_2_2f: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("reward_feature")
+    @Expose var reward_feature: AdUnitConfig = AdUnitConfig(),
+
+    @SerializedName("reward_feature_2f")
+    @Expose var reward_feature_2f: AdUnitConfig = AdUnitConfig(),
+
     @SerializedName("banner_splash")
-    @Expose var enableBannerSplash: Boolean = true,
-
-    // -------- Extra fields --------
-    @SerializedName("new_version")
-    @Expose var newVersionRemote: String = "1.0",
-
-    @SerializedName("check_force_update")
-    @Expose var enableForceUpdate: Boolean = false,
+    @Expose var banner_splash: AdUnitConfig = AdUnitConfig(),
 )
-//{
-//    "inter_splash": true,
-//    "inter_splash_2f": true,
-//    "banner_splash": true,
-//    "inter_switch": true,
-//    "native_fullscreen_1_1": true,
-//    "native_full_screen_1_2": true,
-//    "native_language_1_1": true,
-//    "native_onboarding": true,
-//    "native_permission": true,
-//    "native_home": true,
-//    "native_language_2_1": true,
-//    "reward_home": true,
-//    "new_version": "1.1",
-//    "check_force_update": false,
-//}
+

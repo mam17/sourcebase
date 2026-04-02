@@ -22,9 +22,9 @@ import com.example.myapplication.utils.AppEx.setAppLanguage
 import com.example.myapplication.utils.Constant
 import com.example.myapplication.utils.LocaleHelper
 import com.example.myapplication.utils.SpManager
-import com.example.myapplication.utils.ads.AppOpenAdsUtil
+import com.example.myapplication.libads.utils.AppOpenAdsUtil
+import com.example.myapplication.libads.utils.AdsEx
 import com.example.myapplication.libads.base.BaseAds.Companion.md5
-import com.example.myapplication.libads.event.MMPManager
 import com.example.myapplication.libads.firebase.FirebaseConfigManager
 import com.facebook.FacebookSdk
 import com.facebook.appevents.AppEventsConstants
@@ -86,7 +86,10 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
         registerActivityLifecycleCallbacks(this)
 
         FirebaseApp.initializeApp(this)
+
         FirebaseConfigManager.instance().fetch()
+
+
         MobileAds.initialize(this)
 
         initTiktokSDK()
@@ -131,7 +134,7 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
     fun loadAdsOpenResume(){
         currentActivity?.let { activity ->
             openResumeAds = AppOpenAdsUtil(
-                idAds = BuildConfig.appopen_resume,
+                idAds = AdsEx.getAppOpenId(BuildConfig.appopen_resume),
                 idAds2 = null,
                 adPlacement = "open_resume",
                 isEnable = true,

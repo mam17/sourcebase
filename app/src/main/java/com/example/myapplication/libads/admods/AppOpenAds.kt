@@ -2,15 +2,12 @@ package com.example.myapplication.libads.admods
 
 
 import android.app.Activity
-import android.app.Dialog
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.Gravity
-import android.view.WindowManager
-import com.example.myapplication.R
 import com.example.myapplication.libads.base.BaseAds
+import com.example.myapplication.libads.dialog.DialogLoadingAds
 import com.example.myapplication.libads.event.MMPManager.logAdRevenue
 import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
 import com.facebook.appevents.AppEventsLogger
@@ -141,19 +138,7 @@ class AppOpenAds(
             }
         }
 
-        // Dialog loading full screen
-        val dialog = Dialog(currentActivity).apply {
-            setContentView(R.layout.layout_loading_ads)
-            window?.setBackgroundDrawableResource(android.R.color.transparent)
-            window?.let { w ->
-                val params = w.attributes
-                params.width = WindowManager.LayoutParams.MATCH_PARENT
-                params.height = WindowManager.LayoutParams.MATCH_PARENT
-                params.gravity = Gravity.CENTER
-                w.attributes = params
-            }
-            setCancelable(false)
-        }
+        val dialog = DialogLoadingAds(currentActivity)
 
         try {
             dialog.show()

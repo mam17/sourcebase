@@ -76,7 +76,7 @@ class BannerAds(
     }
 
 
-    /** --------------------  CORE LOADER (dùng chung) -------------------- */
+    /** --------------------  CORE LOADER -------------------- */
     private fun loadBanner(
         activity: Activity,
         adUnitId: String,
@@ -128,7 +128,7 @@ class BannerAds(
     /** --------------------  Build AdRequest -------------------- */
     private fun buildAdRequest(): AdRequest {
         val builder = AdRequest.Builder()
-
+        Log.i(TAG, "buildAdRequest: $collapsiblePositionType")
         if (collapsiblePositionType != CollapsiblePositionType.NONE) {
             val bundle = Bundle().apply {
                 putString(

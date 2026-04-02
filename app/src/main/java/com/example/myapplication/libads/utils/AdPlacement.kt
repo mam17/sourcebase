@@ -1,4 +1,4 @@
-package com.example.myapplication.utils.ads
+package com.example.myapplication.libads.utils
 
 object AdPlacement {
     // Interstitial Ads
@@ -25,6 +25,7 @@ object AdPlacement {
     // Native Ads - Onboarding & Permission
     const val NATIVE_ONBOARDING = "native_onboarding"
     const val NATIVE_FULL_SCREEN_ONBOARDING = "native_full_screen_onboarding"
+    const val NATIVE_FULL_SCREEN_ONBOARDING2 = "native_full_screen_onboarding2"
     const val NATIVE_PERMISSION = "native_permission"
 
     // Native Ads - Home

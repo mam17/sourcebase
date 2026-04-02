@@ -20,6 +20,7 @@ import androidx.viewbinding.ViewBinding
 import com.example.myapplication.R
 import com.example.myapplication.domain.layer.LanguageModel
 import com.example.myapplication.interfaces.NetworkChangeListener
+import com.example.myapplication.libads.firebase.FirebaseConfigManager
 import com.example.myapplication.receivers.NetworkChangeReceiver
 import com.example.myapplication.ui.dialog.DialogLoading
 import com.example.myapplication.utils.LocaleHelper
@@ -35,7 +36,7 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
     var isCheckOpenApp = false
     private var networkChangeListener: NetworkChangeListener? = null
     private var networkChangeReceiver: NetworkChangeReceiver? = null
-
+    val remoteConfig get() = FirebaseConfigManager.instance().adConfig
     open fun onBack() {
         finish()
     }
@@ -75,15 +76,6 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
 
     }
 
-    private fun registerNetwork() {
-        networkChangeListener = object : NetworkChangeListener {
-            override fun onNetworkConnected() {
-                actionNetworkConnected()
-            }
-        }
-
-        networkChangeReceiver = NetworkChangeReceiver(this, networkChangeListener)
-    }
 
     open fun actionNetworkConnected() {}
 
@@ -96,8 +88,6 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
 
         networkChangeReceiver = NetworkChangeReceiver(this, networkChangeListener)
     }
-
-    open fun actionNetworkConnected() {}
 
     @SuppressLint("ObsoleteSdkInt")
     private fun setupLanguage() {

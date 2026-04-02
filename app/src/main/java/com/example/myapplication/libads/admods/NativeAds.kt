@@ -15,6 +15,7 @@ import com.example.myapplication.libads.base.BaseAds
 import com.example.myapplication.libads.event.MMPManager.logAdRevenue
 import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
 import com.example.myapplication.libads.interfaces.OnAdmobShowListener
+import com.example.myapplication.utils.ViewEx.gone
 import com.facebook.appevents.AppEventsLogger
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.gms.ads.AdListener
@@ -39,7 +40,9 @@ class NativeAds(
         private const val TAG = "Tag_nativeAdmob"
         private var indexLoadNative = 0
     }
-
+    private var retryCount = 0
+    private val maxRetries = 3
+    private val initialRetryDelay = 2000L
     private var indexDebug = 0
     private var canReload = false
     private val handler = Handler(Looper.getMainLooper())
@@ -62,18 +65,25 @@ class NativeAds(
     ) {
         val ad = nativeAdLive.value
         if (ad != null) {
-            enableReload(true)
+            try {
+                enableReload(true)
+                val adView = parent.findViewById<NativeAdView>(nativeAdViewId)
 
-            val adView = parent.findViewById<NativeAdView>(nativeAdViewId)
+                parent.hideShimmer()
+                parent.stopShimmer()
 
-            parent.hideShimmer()
-            parent.stopShimmer()
-
-            populateNativeAdView(this, ad, adView)
-
-            onNativeShowListener?.onShow()
+                populateNativeAdView(this, ad, adView)
+                onNativeShowListener?.onShow()
+            } catch (e: Exception) {
+                Log.e(TAG, "showNative error: ${e.message}")
+                onNativeShowListener?.onError(e.message ?: "error")
+                parent.gone()
+            }
         } else {
             onNativeShowListener?.onError("")
+            parent.hideShimmer()
+            parent.stopShimmer()
+            parent.gone()
         }
     }
 
@@ -158,7 +168,9 @@ class NativeAds(
 
         val adLoader = builder.withAdListener(object : AdListener() {
             override fun onAdFailedToLoad(error: LoadAdError) {
-                onAdmobLoadListener?.onError(error.message)
+                val errorDetails = "Code: ${error.code}, Message: ${error.message}, Domain: ${error.domain}"
+                Log.e(TAG, "onAdFailedToLoad: $errorDetails")
+                onAdmobLoadListener?.onError(errorDetails)
                 onAdmobLoadListener = null
             }
         }).build()
@@ -200,7 +212,7 @@ class NativeAds(
 
         // MEDIA CONTENT
         try {
-            adView.mediaView?.setMediaContent(nativeAd.mediaContent)
+            adView.mediaView?.mediaContent = nativeAd.mediaContent
         } catch (_: Exception) {
         }
 
@@ -287,5 +299,46 @@ class NativeAds(
             }
         }
 
+    }
+
+    fun loadWithRetry(
+        listener: OnAdmobLoadListener?,
+        timeoutMillis: Long = 30000,
+        nativeFull: Boolean = false
+    ) {
+        loadWithRetryInternal(listener, timeoutMillis, nativeFull, retryCount)
+    }
+
+    private fun loadWithRetryInternal(
+        listener: OnAdmobLoadListener?,
+        timeoutMillis: Long,
+        nativeFull: Boolean,
+        currentRetry: Int
+    ) {
+        load(object : OnAdmobLoadListener {
+            override fun onLoad() {
+                retryCount = 0 // Reset retry count on success
+                listener?.onLoad()
+            }
+
+            override fun onError(e: String) {
+                if (currentRetry < maxRetries && shouldRetry(e)) {
+                    val delay = initialRetryDelay * (1L shl currentRetry) // Exponential backoff
+                    handler.postDelayed({
+                        loadWithRetryInternal(listener, timeoutMillis, nativeFull, currentRetry + 1)
+                    }, delay)
+                    Log.i(TAG, "Retry loading native ad in ${delay}ms (attempt ${currentRetry + 1})")
+                } else {
+                    retryCount = 0
+                    listener?.onError("Failed after ${currentRetry + 1} attempts: $e")
+                }
+            }
+        }, timeoutMillis, nativeFull)
+    }
+
+    private fun shouldRetry(error: String): Boolean {
+        return !error.contains("No fill") &&
+                !error.contains("Invalid request") &&
+                !error.contains("Ad unit ID")
     }
 }

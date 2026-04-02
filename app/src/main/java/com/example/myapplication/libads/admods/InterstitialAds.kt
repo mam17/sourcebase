@@ -1,14 +1,10 @@
 package com.example.myapplication.libads.admods
 
 import android.app.Activity
-import android.app.Dialog
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.Gravity
-import android.view.WindowManager
-import com.example.myapplication.R
 import com.example.myapplication.libads.base.BaseAds
 import com.example.myapplication.libads.event.MMPManager.logAdRevenue
 import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
@@ -24,142 +20,174 @@ import java.util.Currency
 
 class InterstitialAds(
     context: Context,
-    private val id: String,
-    private val adPlacement: String = ""
-) : BaseAds(context) {
+    private val adUnitId: String,
+    private val adPlacement: String = "",
+    private val reloadOnClose: Boolean = false,
+) : BaseAds(context.applicationContext) {
 
     companion object {
-        private const val TAG = "TAG_interAdmob"
+        private const val TAG = "TAG_InterstitialAds"
     }
 
     private var interstitialAd: InterstitialAd? = null
+    private var isLoading = false
+    private var isShowing = false
 
-    fun load(callback: OnAdmobLoadListener) {
-        load(callback, 30000)
-    }
+    /* ================= TIMEOUT ================= */
 
-    fun load(callback: OnAdmobLoadListener, timeoutMillis: Long) {
-        Log.i(TAG, "load() - Placement: $adPlacement")
-        onAdmobLoadListener = callback
+    private val timeoutHandler = Handler(Looper.getMainLooper())
+    private var timeoutRunnable: Runnable? = null
 
-        if (context == null) {
-            callback.onError("null context")
-            onAdmobLoadListener = null
+    /* ================= LOAD ================= */
+
+    fun load(callback: OnAdmobLoadListener, timeoutMillis: Long = 30_000L) {
+        if (isLoading || interstitialAd != null) {
+            Log.i(TAG, "load() ignored (loading or already loaded) - $adPlacement")
             return
         }
 
-        // Timeout handler
-        Handler(Looper.getMainLooper()).postDelayed({
+        Log.i(TAG, "load() - Placement: $adPlacement")
+        isLoading = true
+        onAdmobLoadListener = callback
+
+        timeoutRunnable = Runnable {
             if (interstitialAd == null) {
-                onAdmobLoadListener?.onError("error")
+                Log.i(TAG, "load timeout - $adPlacement")
+                isLoading = false
+                onAdmobLoadListener?.onError("timeout")
                 onAdmobLoadListener = null
             }
-        }, timeoutMillis)
+        }
+        timeoutHandler.postDelayed(timeoutRunnable!!, timeoutMillis)
 
         InterstitialAd.load(
             context,
-            id,
+            adUnitId,
             adRequestBuilder.build(),
             object : InterstitialAdLoadCallback() {
 
                 override fun onAdLoaded(ad: InterstitialAd) {
-                    Log.i(TAG, "onAdLoaded - Placement: $adPlacement")
+                    clearTimeout()
+                    Log.i(TAG, "onAdLoaded - $adPlacement")
+
                     interstitialAd = ad
+                    isLoading = false
+
+                    setupPaidEvent(ad)
+
                     onAdmobLoadListener?.onLoad()
                     onAdmobLoadListener = null
-
-                    ad.setOnPaidEventListener { adValue ->
-                        val revenue = adValue.valueMicros / 1_000_000.0
-                        if (revenue > 0) {
-                            AppEventsLogger.newLogger(context).logPurchase(
-                                BigDecimal.valueOf(revenue),
-                                Currency.getInstance("USD")
-                            )
-                        }
-                        context.logAdRevenue(
-                            adValue = adValue,
-                            adUnitId = adPlacement,
-                            responseInfo = interstitialAd?.responseInfo,
-                            adType = "ad_interstitial"
-                        )
-                    }
                 }
 
                 override fun onAdFailedToLoad(error: LoadAdError) {
-                    Log.i(TAG, "onAdFailedToLoad: ${error.message} - Placement: $adPlacement")
+                    clearTimeout()
+                    Log.i(TAG, "onAdFailedToLoad: ${error.message} - $adPlacement")
+
+                    interstitialAd = null
+                    isLoading = false
+
                     onAdmobLoadListener?.onError(error.message)
                     onAdmobLoadListener = null
                 }
-
             }
         )
     }
 
-    fun showInterstitial(activity: Activity, listener: OnAdmobShowListener) {
-        Log.i(TAG, "showInterstitial() - Placement: $adPlacement")
+    /* ================= SHOW ================= */
 
+    fun show(activity: Activity, listener: OnAdmobShowListener) {
         val ad = interstitialAd
-        if (ad == null || isShowingOpenAd) {
-            listener.onError("")
+        if (ad == null || isShowing || activity.isFinishing || activity.isDestroyed) {
+            listener.onError("inter not available")
             return
         }
 
+        isShowing = true
+
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
 
-            override fun onAdDismissedFullScreenContent() {
-                Log.i(TAG, "onAdDismissedFullScreenContent - Placement: $adPlacement")
-                interstitialAd = null
+            override fun onAdShowedFullScreenContent() {
+                Log.i(TAG, "onAdShowed - $adPlacement")
                 listener.onShow()
-                canShowOpenApp = true
+            }
+
+            override fun onAdDismissedFullScreenContent() {
+                Log.i(TAG, "onAdDismissed - $adPlacement")
+                cleanupAfterShow()
+                listener.onClosed()
+
+                if (reloadOnClose) reload()
             }
 
             override fun onAdFailedToShowFullScreenContent(error: AdError) {
-                Log.i(TAG, "onAdFailedToShowFullScreenContent: ${error.message} - Placement: $adPlacement")
-                interstitialAd = null
+                Log.i(TAG, "onAdFailedToShow: ${error.message}")
+                cleanupAfterShow()
                 listener.onError(error.message)
-            }
-
-            override fun onAdShowedFullScreenContent() {
-                Log.i(TAG, "onAdShowedFullScreenContent - Placement: $adPlacement")
-                canShowOpenApp = false
+                listener.onClosed()
             }
         }
 
-        val dialog = Dialog(activity).apply {
-            setContentView(R.layout.layout_loading_ads)
+        ad.show(activity)
+    }
 
-            window?.setBackgroundDrawableResource(R.color.transparent)
+    /* ================= HELPERS ================= */
 
-            window?.let { w ->
-                val params = w.attributes
-                params.width = WindowManager.LayoutParams.MATCH_PARENT
-                params.height = WindowManager.LayoutParams.MATCH_PARENT
-                params.gravity = Gravity.CENTER
-                w.attributes = params
+    private fun reload() {
+        if (interstitialAd != null || isLoading) return
+        Log.i(TAG, "reload interstitial - $adPlacement")
+
+        load(object : OnAdmobLoadListener {
+            override fun onLoad() {
+                Log.i(TAG, "reload success - $adPlacement")
             }
 
-            setCancelable(false)
-        }
-
-        try {
-            if (!activity.isDestroyed && !dialog.isShowing) dialog.show()
-        } catch (e: Exception) {
-            Log.e(TAG, "Dialog error: ${e.message}")
-        }
-
-        Handler(Looper.getMainLooper()).postDelayed({
-            if (!activity.isDestroyed) {
-                dialog.dismiss()
-                interstitialAd?.show(activity) ?: run {
-                    listener.onError("")
-                }
+            override fun onError(e: String) {
+                Log.i(TAG, "reload failed: $e")
             }
-        }, 2000)
+        })
+    }
+
+    private fun cleanupAfterShow() {
+        interstitialAd?.fullScreenContentCallback = null
+        interstitialAd = null
+        isShowing = false
+    }
+
+    private fun clearTimeout() {
+        timeoutRunnable?.let { timeoutHandler.removeCallbacks(it) }
+        timeoutRunnable = null
+    }
+
+    private fun setupPaidEvent(ad: InterstitialAd) {
+        ad.setOnPaidEventListener { adValue ->
+            val revenue = adValue.valueMicros / 1_000_000.0
+            if (revenue > 0) {
+                AppEventsLogger.newLogger(context).logPurchase(
+                    BigDecimal.valueOf(revenue),
+                    Currency.getInstance("USD")
+                )
+            }
+
+            context.logAdRevenue(
+                adValue = adValue,
+                adUnitId = adPlacement,
+                responseInfo = ad.responseInfo,
+                adType = "ad_interstitial"
+            )
+        }
     }
 
     fun available(): Boolean {
-        val available = interstitialAd != null && !isShowingOpenAd
-        Log.i(TAG, "available: $available - Placement: $adPlacement")
+        val available = interstitialAd != null && !isShowing
+        Log.i(TAG, "available=$available - $adPlacement")
         return available
+    }
+
+    fun destroy() {
+        clearTimeout()
+        interstitialAd?.fullScreenContentCallback = null
+        interstitialAd = null
+        isLoading = false
+        isShowing = false
     }
 }

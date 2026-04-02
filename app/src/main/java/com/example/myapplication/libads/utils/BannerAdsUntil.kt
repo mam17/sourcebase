@@ -1,10 +1,11 @@
-package com.example.myapplication.utils.ads
+package com.example.myapplication.libads.utils
 
 import android.app.Activity
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.example.myapplication.libads.admods.BannerAdLoader
+import com.example.myapplication.libads.firebase.FirebaseConfigManager
 import com.example.myapplication.libads.admods.BannerAds
 import com.example.myapplication.libads.helper.CollapsiblePositionType
 import com.facebook.shimmer.ShimmerFrameLayout
@@ -24,11 +25,16 @@ object BannerAdsUntil {
 
     // ------------------- Banner -------------------
     fun initBannerAdaptive(activity: Activity, adUnit: String, shimmer: ShimmerFrameLayout) {
+        if (!FirebaseConfigManager.instance().isEnableAllAds) {
+            shimmer.visibility = android.view.View.GONE
+            return
+        }
         bannerAdAdaptive = BannerAdLoader(activity, adUnit, shimmer)
         Log.i(TAG, "BannerAd initialized")
     }
 
     fun loadBanner() {
+        if (!FirebaseConfigManager.instance().isEnableAllAds) return
         bannerAdAdaptive?.loadBanner()
     }
 
@@ -59,6 +65,10 @@ object BannerAdsUntil {
         shimmer: ShimmerFrameLayout,
         collapsiblePosition: CollapsiblePositionType = CollapsiblePositionType.NONE
     ) {
+        if (!FirebaseConfigManager.instance().isEnableAllAds) {
+            shimmer.visibility = android.view.View.GONE
+            return
+        }
         bannerAds = BannerAds(activity, collapsiblePosition, adPlacement)
 
         if (!secondaryAdUnitId.isNullOrEmpty()) {

@@ -1,15 +1,8 @@
 package com.example.myapplication.libads.admods
 
-
 import android.app.Activity
-import android.app.Dialog
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
-import android.view.Gravity
-import android.view.WindowManager
-import com.example.myapplication.R
 import com.example.myapplication.libads.base.BaseAds
 import com.example.myapplication.libads.event.MMPManager.logAdRevenue
 import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
@@ -42,8 +35,10 @@ class RewardedAds(
     }
 
     fun load(onAdmobLoadListener: OnAdmobLoadListener?) {
-        Log.i(TAG, "load rewarded")
+        if (isLoading || rewardedAd != null) return
+
         isLoading = true
+        Log.i(TAG, "load rewarded")
 
         RewardedAd.load(
             context,
@@ -89,72 +84,34 @@ class RewardedAds(
         earnReward = false
 
         val ad = rewardedAd
-        if (ad == null) {
-            onAdmobShowListener.onError("null")
+        if (ad == null || activity.isFinishing || activity.isDestroyed) {
+            onAdmobShowListener.onError("Ad not ready or activity finishing")
             return
         }
 
-        // Loading dialog
-        val dialog = Dialog(activity).apply {
-            setContentView(R.layout.layout_loading_ads)
-
-            window?.setBackgroundDrawableResource(R.color.transparent)
-
-            window?.let { w ->
-                val params = w.attributes
-                params.width = WindowManager.LayoutParams.MATCH_PARENT
-                params.height = WindowManager.LayoutParams.MATCH_PARENT
-                params.gravity = Gravity.CENTER
-                w.attributes = params
+        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdShowedFullScreenContent() {
+                // nothing
             }
 
-            setCancelable(false)
+            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                rewardedAd = null
+                onAdmobShowListener.onError(adError.message)
+            }
+
+            override fun onAdDismissedFullScreenContent() {
+                rewardedAd = null
+                if (earnReward) {
+                    onAdmobShowListener.onShow()
+                } else {
+                    onAdmobShowListener.onError("no reward")
+                }
+            }
         }
 
-        try {
-            if (!activity.isDestroyed && !dialog.isShowing) {
-                dialog.show()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Dialog show error")
+        ad.show(activity) {
+            earnReward = true
         }
-
-        Handler(Looper.getMainLooper()).postDelayed({
-            if (!activity.isDestroyed) {
-                dialog.dismiss()
-
-                val rewarded = rewardedAd
-                if (rewarded == null || activity.isDestroyed) {
-                    onAdmobShowListener.onError("Ad not ready")
-                    return@postDelayed
-                }
-
-                rewarded.fullScreenContentCallback = object : FullScreenContentCallback() {
-
-                    override fun onAdShowedFullScreenContent() {
-                        // nothing
-                    }
-
-                    override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                        rewardedAd = null
-                        onAdmobShowListener.onError(adError.message)
-                    }
-
-                    override fun onAdDismissedFullScreenContent() {
-                        rewardedAd = null
-                        if (earnReward) {
-                            onAdmobShowListener.onShow()
-                        } else {
-                            onAdmobShowListener.onError("no reward")
-                        }
-                    }
-                }
-
-                rewarded.show(activity) {
-                    earnReward = true
-                }
-            }
-        }, 2000)
     }
 
     fun loaded(): Boolean {

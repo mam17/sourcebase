@@ -17,11 +17,17 @@
         android:text="Reward" />
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnInterSplash"
+        android:id="@+id/btnInterHomePreload"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="Inter" />
+        android:text="Inter Preload" />
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnInterHome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="Inter Home" />
     <com.facebook.shimmer.ShimmerFrameLayout
         android:id="@+id/fl_adplaceholder"
         android:layout_width="match_parent"

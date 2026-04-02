@@ -24,7 +24,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.myapplication"
+        applicationId = "com.longdt.ads"
         minSdk = 24
         //noinspection OldTargetApi
         targetSdk = 36
@@ -171,7 +171,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
     implementation("com.google.firebase:firebase-crashlytics-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
-//    implementation("com.google.firebase:firebase-analytics:23.0.0")
+    implementation("com.google.firebase:firebase-analytics:23.0.0")
     implementation("com.google.firebase:firebase-core:21.1.1")
 
     //mediation admob

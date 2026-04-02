@@ -14,7 +14,6 @@ class BannerAdLoader(
     private val idAds: String,
     private val shimmerLayout: ShimmerFrameLayout
 ) {
-
     var adView: AdView? = null
     private var currentAdHeightDp = 100
     private var isLoading = false
