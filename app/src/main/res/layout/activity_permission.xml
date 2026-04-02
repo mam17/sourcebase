@@ -63,14 +63,27 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginVertical="@dimen/size40"
         android:paddingHorizontal="@dimen/size30"
         android:paddingTop="@dimen/size5"
         android:paddingBottom="@dimen/size6"
         android:text="@string/txt_next"
         android:textColor="@color/color_main"
         android:textSize="@dimen/size16"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/shimmerNativeFeature"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/shimmerNativeFeature"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <include
+            android:id="@+id/native_ad_view_feature"
+            layout="@layout/layout_ads_native_type_1" />
+
+    </com.facebook.shimmer.ShimmerFrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

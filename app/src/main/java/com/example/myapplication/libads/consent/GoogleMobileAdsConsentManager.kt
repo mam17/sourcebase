@@ -2,6 +2,7 @@ package com.example.myapplication.libads.consent
 
 import android.app.Activity
 import android.content.Context
+import com.example.myapplication.BuildConfig
 import com.google.android.ump.ConsentDebugSettings
 import com.google.android.ump.ConsentForm.OnConsentFormDismissedListener
 import com.google.android.ump.ConsentInformation
@@ -42,16 +43,20 @@ class GoogleMobileAdsConsentManager private constructor(context: Context) {
         testDeviceIds: List<String> = emptyList(),
         onComplete: OnConsentGatheringCompleteListener
     ) {
-        consentInformation.reset()
-
-        val debugSettings = ConsentDebugSettings.Builder(activity).apply {
-            testDeviceIds.forEach { addTestDeviceHashedId(it) }
-            setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
-        }.build()
-
-        val params = ConsentRequestParameters.Builder()
-            .setConsentDebugSettings(debugSettings)
-            .build()
+        val params = if (BuildConfig.DEBUG) {
+            consentInformation.reset()
+            val debugSettings = ConsentDebugSettings.Builder(activity).apply {
+                testDeviceIds.forEach { addTestDeviceHashedId(it) }
+                setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
+            }.build()
+            ConsentRequestParameters.Builder()
+                .setConsentDebugSettings(debugSettings)
+                .build()
+        } else {
+            ConsentRequestParameters.Builder()
+                .setTagForUnderAgeOfConsent(false)
+                .build()
+        }
 
         consentInformation.requestConsentInfoUpdate(
             activity,

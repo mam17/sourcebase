@@ -11,30 +11,35 @@ import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.applovin.sdk.AppLovinPrivacySettings
 import com.appsflyer.AFAdRevenueData
 import com.appsflyer.AdRevenueScheme
 import com.appsflyer.AppsFlyerLib
 import com.appsflyer.MediationNetwork
 import com.appsflyer.attribution.AppsFlyerRequestListener
 import com.bytedance.sdk.openadsdk.api.PAGConstant
+import com.example.myapplication.libads.base.BaseAds.Companion.md5
 import com.example.myapplication.libads.consent.GoogleMobileAdsConsentManager
+import com.example.myapplication.libads.firebase.FirebaseConfigManager
+import com.example.myapplication.libads.utils.AdPlacement
+import com.example.myapplication.libads.utils.AdsEx
+import com.example.myapplication.libads.utils.AppOpenAdsUtil
 import com.example.myapplication.utils.AppEx.setAppLanguage
 import com.example.myapplication.utils.Constant
 import com.example.myapplication.utils.LocaleHelper
 import com.example.myapplication.utils.SpManager
-import com.example.myapplication.libads.utils.AppOpenAdsUtil
-import com.example.myapplication.libads.utils.AdsEx
-import com.example.myapplication.libads.base.BaseAds.Companion.md5
-import com.example.myapplication.libads.firebase.FirebaseConfigManager
 import com.facebook.FacebookSdk
 import com.facebook.appevents.AppEventsConstants
 import com.facebook.appevents.AppEventsLogger
+import com.google.ads.mediation.inmobi.InMobiConsent
 import com.google.ads.mediation.pangle.PangleMediationAdapter
 import com.google.android.gms.ads.AdValue
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.ResponseInfo
 import com.google.android.ump.FormError
 import com.google.firebase.FirebaseApp
+import com.inmobi.sdk.InMobiSdk
+import com.ironsource.mediationsdk.IronSource
 import com.mbridge.msdk.MBridgeConstans
 import com.mbridge.msdk.out.MBridgeSDKFactory
 import com.tiktok.TikTokBusinessSdk
@@ -42,7 +47,10 @@ import com.tiktok.appevents.base.EventName
 import com.tiktok.appevents.base.TTBaseEvent
 import com.tiktok.appevents.contents.TTContentsEventConstants
 import com.tiktok.appevents.contents.TTPurchaseEvent
+import com.vungle.ads.VunglePrivacySettings
 import dagger.hilt.android.HiltAndroidApp
+import org.json.JSONException
+import org.json.JSONObject
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Currency
@@ -55,8 +63,10 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
     @Inject
     lateinit var spManager: SpManager
     private var currentActivity: Activity? = null
+    private var isSDKInitialized = false
 
     private lateinit var openResumeAds: AppOpenAdsUtil
+
     companion object {
         @SuppressLint("StaticFieldLeak")
         var context: Context? = null
@@ -81,27 +91,74 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
         context = applicationContext
         mInstance = this
 
-
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         registerActivityLifecycleCallbacks(this)
 
         FirebaseApp.initializeApp(this)
-
         FirebaseConfigManager.instance().fetch()
+    }
 
+    fun initSDKs() {
+        if (isSDKInitialized) return
+        isSDKInitialized = true
 
+        Log.i("TAG_APP", "initSDKs: Start initializing SDKs")
         MobileAds.initialize(this)
 
         initTiktokSDK()
         initAppsflyer()
         FacebookSdk.setAutoLogAppEventsEnabled(true)
+        
+        initMediation(true)
+    }
+
+    private fun initMediation(isGranted: Boolean) {
+        initPangle(isGranted)
+        initVungle(isGranted)
+        initApplovin(isGranted)
+        initFAN(isGranted)
+        initMintegral(isGranted)
+        initInMobi(isGranted)
+        initIronSource(isGranted)
+    }
+
+    private fun initFAN(isGranted: Boolean) {
+        com.facebook.ads.AudienceNetworkAds.initialize(this)
+    }
+
+    private fun initVungle(isGranted: Boolean) {
+        VunglePrivacySettings.setGDPRStatus(isGranted, "v1.0.0")
+    }
+
+    private fun initPangle(isGranted: Boolean) {
+        // Pangle handles it via Mediation Adapter usually
+    }
+
+    private fun initApplovin(isGranted: Boolean) {
+        AppLovinPrivacySettings.setDoNotSell(!isGranted, this)
+        VunglePrivacySettings.setCCPAStatus(isGranted)
+    }
+
+    private fun initInMobi(isGranted: Boolean) {
+        val consentObject = JSONObject()
+        try {
+            consentObject.put(InMobiSdk.IM_GDPR_CONSENT_AVAILABLE, isGranted)
+            consentObject.put("gdpr", if (isGranted) "1" else "0")
+        } catch (exception: JSONException) {
+            exception.printStackTrace()
+        }
+
+        InMobiConsent.updateGDPRConsent(consentObject)
+    }
+
+    private fun initMintegral(isGranted: Boolean) {
         val sdk = MBridgeSDKFactory.getMBridgeSDK()
-        sdk.setConsentStatus(this, MBridgeConstans.IS_SWITCH_ON)
-        sdk.setDoNotTrackStatus(this, false)
+        sdk.setConsentStatus(this, if (isGranted) MBridgeConstans.IS_SWITCH_ON else MBridgeConstans.IS_SWITCH_OFF)
+    }
 
-        PangleMediationAdapter.setGDPRConsent(PAGConstant.PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_CONSENT)
-        PangleMediationAdapter.setPAConsent(PAGConstant.PAGPAConsentType.PAG_PA_CONSENT_TYPE_CONSENT)
-
+    private fun initIronSource(isGranted: Boolean) {
+        IronSource.setConsent(isGranted)
+        IronSource.setMetaData("do_not_sell", if (isGranted) "false" else "true")
     }
 
     @SuppressLint("HardwareIds")
@@ -114,7 +171,7 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
         val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
         val hashedId = md5(androidId).uppercase(Locale.getDefault())
         Log.i("TAG_Consent", "hashedId: $hashedId")
-        val ids = testDeviceIds.ifEmpty { listOf("hashedId") }
+        val ids = testDeviceIds.ifEmpty { listOf(hashedId) }
 
         consentManager.gatherConsent(activity, ids, object :
             GoogleMobileAdsConsentManager.OnConsentGatheringCompleteListener {
@@ -122,7 +179,10 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
                 if (formError != null) {
                     Log.w("TAG_Consent", "Consent form error: ${formError.message}")
                 } else {
-                    Log.d("TAG_Consent", "Consent complete. Can request ads: ${consentManager.canRequestAds()}")
+                    Log.d(
+                        "TAG_Consent",
+                        "Consent complete. Can request ads: ${consentManager.canRequestAds()}"
+                    )
                     val granted = consentManager.canRequestAds()
                     spManager.putBoolean(Constant.KEY_SP_UMP_SHOWED, granted)
                 }
@@ -131,12 +191,12 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
         })
     }
 
-    fun loadAdsOpenResume(){
+    fun loadAdsOpenResume() {
         currentActivity?.let { activity ->
             openResumeAds = AppOpenAdsUtil(
                 idAds = AdsEx.getAppOpenId(BuildConfig.appopen_resume),
                 idAds2 = null,
-                adPlacement = "open_resume",
+                adPlacement = AdPlacement.APPOPEN_RESUME,
                 isEnable = true,
                 checkOtherAdsShowing = { isAnyAdShowing() }
             )
@@ -222,7 +282,12 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
         })
     }
 
-    private fun logRevForAppsflyer(valueMicroStr: String?, networkAdapter: String?, currencyCode: String?, adType: String?) {
+    private fun logRevForAppsflyer(
+        valueMicroStr: String?,
+        networkAdapter: String?,
+        currencyCode: String?,
+        adType: String?
+    ) {
         runCatching {
             val valueMicro = (valueMicroStr?.toDoubleOrNull() ?: 0.0) / 1_000_000
 
@@ -286,7 +351,12 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
         TikTokBusinessSdk.startTrack()
     }
 
-    private fun reportRevForTiktok(currencyCode: String, mValueMicros: String, id: String, adType: String) {
+    private fun reportRevForTiktok(
+        currencyCode: String,
+        mValueMicros: String,
+        id: String,
+        adType: String
+    ) {
         try {
             if (currencyCode.isEmpty())
                 return
@@ -357,4 +427,5 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
             adType = adType
         )
     }
+
 }

@@ -3,16 +3,22 @@ package com.example.myapplication.ui.language
 import android.content.Context
 import android.content.Intent
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.R
 import com.example.myapplication.base.activity.BaseActivity
 import com.example.myapplication.databinding.ActivityLanguageBinding
+import com.example.myapplication.libads.utils.NativeAdsUtil
 import com.example.myapplication.ui.MainActivity
 import com.example.myapplication.ui.onboarding.OnBoardingActivity
+import com.example.myapplication.utils.AppEx.observeOnce
 import com.example.myapplication.utils.AppEx.setAppLanguage
 import com.example.myapplication.utils.Constant.KEY_FROM_SPLASH
 import com.example.myapplication.utils.ViewEx.gone
+import com.example.myapplication.utils.ViewEx.invisible
 import com.example.myapplication.utils.ViewEx.visible
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LanguageActivity : BaseActivity<ActivityLanguageBinding>() {
@@ -33,9 +39,11 @@ class LanguageActivity : BaseActivity<ActivityLanguageBinding>() {
     }
 
     override fun initViews() {
-        viewBinding.apply {
+        fromSplash = intent.getBooleanExtra(KEY_FROM_SPLASH, false)
+        initNativeAd1()
+        loadOnBoardingNativeAd()
 
-            fromSplash = intent.getBooleanExtra(KEY_FROM_SPLASH, false)
+        viewBinding.apply {
             if (!fromSplash) {
                 toolBarLanguage.btnBack.visible()
             } else {
@@ -48,12 +56,11 @@ class LanguageActivity : BaseActivity<ActivityLanguageBinding>() {
 
             rclLanguage.adapter = languageAdapter
 
-            if (spManager.getFirstOpenApp()) {
+            if (isCheckOpenApp) {
                 toolBarLanguage.btnSelect.setText(R.string.txt_next)
             } else {
                 toolBarLanguage.btnSelect.setText(R.string.txt_select)
             }
-
 
             toolBarLanguage.btnSelect.setOnClickListener {
                 languageAdapter.selectedLanguage()?.let { languageModel ->
@@ -74,8 +81,16 @@ class LanguageActivity : BaseActivity<ActivityLanguageBinding>() {
     override fun initData() {
         viewModel.loadListLanguage()
         languageAdapter.onClick = {
+            viewBinding.prLoading.visible()
+            viewBinding.toolBarLanguage.btnSelect.invisible()
+            initNativeAd2()
             languageAdapter.selectLanguage(it.languageCode)
-            viewBinding.toolBarLanguage.btnSelect.visible()
+
+            lifecycleScope.launch {
+                delay(3000)
+                viewBinding.prLoading.gone()
+                viewBinding.toolBarLanguage.btnSelect.visible()
+            }
         }
     }
 
@@ -89,5 +104,45 @@ class LanguageActivity : BaseActivity<ActivityLanguageBinding>() {
         }
     }
 
+    private fun initNativeAd1() {
+        NativeAdsUtil.loadNativeLanguage1(isCheckOpenApp) { nativeAd ->
+            nativeAd.getNativeAdLive().observeOnce(this@LanguageActivity) {
+                if (nativeAd.available()) {
+                    viewBinding.vNativeLanguage.frAdsNative.visible()
+                    nativeAd.showNative(
+                        viewBinding.vNativeLanguage.frAdsNative,
+                        R.id.native_ad_view3,
+                        null
+                    )
+                } else {
+                    viewBinding.vNativeLanguage.frAdsNative.gone()
+                }
+            }
+        }
+    }
 
+    private fun initNativeAd2() {
+        NativeAdsUtil.loadNativeLanguage2(isCheckOpenApp) { nativeAd ->
+            nativeAd.getNativeAdLive().observeOnce(this@LanguageActivity) {
+                if (nativeAd.available()) {
+                    viewBinding.vNativeLanguage.frAdsNative.gone()
+                    viewBinding.vNativeLanguage.frAdsNative2.visible()
+                    nativeAd.showNative(
+                        viewBinding.vNativeLanguage.frAdsNative2,
+                        R.id.native_ad_view1,
+                        null
+                    )
+                } else {
+                    viewBinding.vNativeLanguage.frAdsNative2.gone()
+                }
+            }
+        }
+    }
+
+    private fun loadOnBoardingNativeAd() {
+        if (fromSplash) {
+            NativeAdsUtil.loadNativeFullScreenOnb(isCheckOpenApp)
+            NativeAdsUtil.loadNativeFullScreenOnb2(isCheckOpenApp)
+        }
+    }
 }

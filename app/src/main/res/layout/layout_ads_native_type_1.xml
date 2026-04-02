@@ -2,14 +2,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:layout_margin="@dimen/size2"
-    android:background="@drawable/bg_native_ads">
+    android:background="@drawable/bg_ads_native">
 
     <LinearLayout
         android:id="@+id/contentNative"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="@dimen/size5">
 
@@ -85,8 +85,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TextView
@@ -101,8 +100,7 @@
             <com.google.android.gms.ads.nativead.MediaView
                 android:id="@+id/ad_media"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="128dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="5dp" />
 
@@ -146,6 +144,7 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@+id/contentNative"
             android:layout_marginLeft="@dimen/size10"
             android:layout_marginTop="15dp"
             android:layout_marginRight="@dimen/size10"

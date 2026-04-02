@@ -38,7 +38,7 @@
 
         <include
             android:id="@+id/native_ad_view"
-            layout="@layout/layout_native_ad_type1" />
+            layout="@layout/layout_ads_native_type_1" />
 
     </com.facebook.shimmer.ShimmerFrameLayout>
 </LinearLayout>

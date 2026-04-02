@@ -180,6 +180,8 @@ dependencies {
     implementation("com.google.ads.mediation:vungle:7.5.0.0")
     implementation("com.google.ads.mediation:pangle:7.2.0.6.0")
     implementation("com.google.ads.mediation:mintegral:16.9.71.0")
+    implementation("com.google.ads.mediation:inmobi:10.6.1.0")
+    implementation("com.google.ads.mediation:ironsource:8.2.0.0")
 
     //adjust
     implementation("com.adjust.sdk:adjust-android:5.4.6")

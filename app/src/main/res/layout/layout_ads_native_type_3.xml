@@ -3,33 +3,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/size2"
-    android:background="@drawable/bg_native_ads">
+    android:layout_margin="2dp"
+    android:background="@drawable/bg_ads_native">
 
     <LinearLayout
         android:id="@+id/contentNative"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/size5">
+        android:padding="5dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/size5"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <ImageView
                 android:id="@+id/ad_app_icon"
-                android:layout_width="@dimen/size30"
-                android:layout_height="@dimen/size30"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
                 android:adjustViewBounds="true"
+                android:importantForAccessibility="no"
                 tools:background="@color/black" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/size10"
+                android:layout_marginStart="10dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -49,14 +50,15 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="left"
-                        android:layout_marginRight="5dp"
-                        android:background="@color/color_cta"
+                        android:layout_gravity="start"
+                        android:layout_marginEnd="5dp"
+                        android:background="#FFEB3B"
                         android:paddingLeft="5dp"
                         android:paddingRight="5dp"
-                        android:text="Ad"
+                        android:text="AD"
                         android:textColor="#FFFFFF"
-                        android:textSize="@dimen/size10" />
+                        android:textSize="11sp"
+                        tools:ignore="HardcodedText" />
 
                     <TextView
                         android:id="@+id/ad_advertiser"
@@ -92,7 +94,7 @@
                 android:id="@+id/ad_body"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/size5"
+                android:layout_marginTop="5dp"
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 tools:text="Style up to date with your ads check how your ads are performing" />
@@ -142,24 +144,23 @@
         </LinearLayout>
 
         <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/contentNative"
-            android:layout_marginLeft="@dimen/size10"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_gravity="end"
+            android:layout_marginHorizontal="10dp"
             android:layout_marginTop="15dp"
-            android:layout_marginRight="@dimen/size10"
             android:layout_marginBottom="10dp"
             app:cardBackgroundColor="@color/color_cta"
-            app:cardCornerRadius="@dimen/size20">
+            app:cardCornerRadius="10dp">
 
             <TextView
                 android:id="@+id/ad_call_to_action"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:gravity="center"
-                android:paddingVertical="@dimen/size14"
+                android:paddingHorizontal="20dp"
                 android:textColor="@color/white"
-                android:textSize="@dimen/size13"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 tools:text="Install" />
         </androidx.cardview.widget.CardView>

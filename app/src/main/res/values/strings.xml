@@ -4,6 +4,14 @@
     <string name="facebook_app_id" translatable="false">111111111111111111</string>
     <string name="facebook_client_token" translatable="false">bababababababaa7a7a7a7a7a7a7a7</string>
 
+    <string name="txt_title_onb1">aaaaaaaaaaaaaa</string>
+    <string name="txt_desc_onb1">aaaaaaaaaaaaaa</string>
+    <string name="txt_title_onb2">aaaaaaaaaaaaaa</string>
+    <string name="txt_title_onb3">aaaaaaaaaaaaaa</string>
+    <string name="txt_desc_onb2">aaaaaaaaaaaaaae</string>
+    <string name="txt_desc_onb3">aaaaaaaaaaaaaa</string>
+    <string name="txt_cont_feature">aaaaaaaaaaaaaa</string>
+
     <string name="txt_english" translatable="false">English</string>
     <string name="txt_vietnamese" translatable="false">Vietnamese</string>
     <string name="txt_hindi" translatable="false">Hindi</string>

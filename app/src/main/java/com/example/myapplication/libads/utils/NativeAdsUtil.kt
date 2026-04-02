@@ -29,7 +29,7 @@ object NativeAdsUtil {
     @SuppressLint("StaticFieldLeak")
     var featureNativeAdmob: NativeAds? = null
 
-    fun loadNativeFullSplash(onAdLoaded: ((NativeAds) -> Unit)? = null) {
+    fun loadNativeFullSplash(isFirstOpenApp: Boolean, onAdLoaded: ((NativeAds) -> Unit)? = null) {
         if (!FirebaseConfigManager.instance().isEnableAllAds) return
         val config = FirebaseConfigManager.instance().adConfig
         if (!config.native_fs_splash.enabled && !config.native_fs_splash_2f.enabled) return
@@ -43,11 +43,9 @@ object NativeAdsUtil {
             adPlacement = AdPlacement.NATIVE_FS_SPLASH,
             onLoaded = {
                 splashNativeFullAdmob = it
-                Log.d("TAG_ADS_Native", "Splash Native loaded!")
                 onAdLoaded?.invoke(it)
             },
             onFailed = {
-                Log.d("TAG_ADS_Native", "Splash Native: all IDs failed")
             }
         )
     }
@@ -132,8 +130,16 @@ object NativeAdsUtil {
         val config = FirebaseConfigManager.instance().adConfig
         if (!config.native_fs_1_1.enabled && !config.native_fs_1_2f.enabled && !config.native_fs_2_1.enabled && !config.native_fs_2_1f.enabled) return
 
-        val id1F = if (isFirstOpenApp) { config.native_fs_1_1.id } else { config.native_fs_2_1.id }
-        val id2F = if (isFirstOpenApp) { config.native_fs_1_2f.id } else { config.native_fs_2_1f.id }
+        val id1F = if (isFirstOpenApp) {
+            config.native_fs_1_1.id
+        } else {
+            config.native_fs_2_1.id
+        }
+        val id2F = if (isFirstOpenApp) {
+            config.native_fs_1_2f.id
+        } else {
+            config.native_fs_2_1f.id
+        }
 
         loadWithFallback(
             idPrimary = id2F,
@@ -158,7 +164,11 @@ object NativeAdsUtil {
         val config = FirebaseConfigManager.instance().adConfig
         if (!config.native_fs_2_1.enabled && !config.native_fs_2_2.enabled && !config.native_fs_2_2f.enabled) return
 
-        val id1F = if (isFirstOpenApp) { config.native_fs_2_1.id } else { config.native_fs_2_2.id }
+        val id1F = if (isFirstOpenApp) {
+            config.native_fs_2_1.id
+        } else {
+            config.native_fs_2_2.id
+        }
 
         val id2F = config.native_fs_2_2f.id
 
@@ -257,7 +267,7 @@ object NativeAdsUtil {
         onLoaded: (NativeAds) -> Unit,
         onFailed: (() -> Unit)? = null
     ) {
-        fun loadAd(id: String,next: (() -> Unit)? = null) {
+        fun loadAd(id: String, next: (() -> Unit)? = null) {
             if (id.isEmpty()) {
                 next?.invoke() ?: onFailed?.invoke()
                 return

@@ -41,20 +41,9 @@
 
     <include
         android:id="@+id/ad_view_container"
-        layout="@layout/layout_banner_ads" />
+        layout="@layout/layout_ads_banner" />
 
-    <com.facebook.shimmer.ShimmerFrameLayout
-        android:id="@+id/fl_adplaceholder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <include
-            android:id="@+id/native_ad_view"
-            layout="@layout/layout_native_ad_type1" />
-
-    </com.facebook.shimmer.ShimmerFrameLayout>
+    <include
+        android:id="@+id/layoutNativeFSTimer"
+        layout="@layout/fl_native_full_time_count" />
 </androidx.constraintlayout.widget.ConstraintLayout>

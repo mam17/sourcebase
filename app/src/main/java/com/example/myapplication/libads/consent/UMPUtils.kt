@@ -37,7 +37,7 @@ class UMPUtils {
             Log.i(TAG, "init: ")
 
             val progressDialog = Dialog(activity).apply {
-                setContentView(R.layout.layout_loading_ads)
+                setContentView(R.layout.layout_ads_loading)
                 window?.setBackgroundDrawableResource(R.color.transparent)
                 window?.let { w ->
                     val params = w.attributes
