@@ -149,10 +149,6 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
         } catch (e: Exception) {
             Log.e("App", "Error in onConfigurationChanged", e)
         }
-        getDeviceLanguage()
-        val language = spManager.getLanguage()
-        LocaleHelper.onAttach(this, language.languageCode)
-        super.onConfigurationChanged(newConfig)
     }
 
     override fun attachBaseContext(newBase: Context?) {
@@ -202,26 +198,6 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
 
     override fun onActivityDestroyed(activity: Activity) {
         Log.d("TAG_APP", "onActivityDestroyed: ${activity::class.java.simpleName}")
-        if (currentActivity == activity) {
-            currentActivity = null
-        }
-        if (newBase != null) {
-            val prefs = newBase.getSharedPreferences("transparent", MODE_PRIVATE)
-
-            val languageJson = prefs.getString("key_sp_current_language", "")
-
-            val languageCode = if (!languageJson.isNullOrEmpty()) {
-                val regex = "\"languageCode\":\"([^\"]+)\"".toRegex()
-                regex.find(languageJson)?.groups?.get(1)?.value ?: "en"
-            } else {
-                "en"
-            }
-
-            val updatedContext = newBase.setAppLanguage(languageCode)
-            super.attachBaseContext(updatedContext)
-        } else {
-            super.attachBaseContext(newBase)
-        }
     }
 
     private fun initAppsflyer() {

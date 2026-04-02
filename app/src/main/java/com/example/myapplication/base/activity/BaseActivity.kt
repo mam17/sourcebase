@@ -1,5 +1,6 @@
 package com.example.myapplication.base.activity
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.IntentFilter
 import android.net.ConnectivityManager
@@ -86,6 +87,19 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
 
     open fun actionNetworkConnected() {}
 
+    private fun registerNetwork() {
+        networkChangeListener = object : NetworkChangeListener {
+            override fun onNetworkConnected() {
+                actionNetworkConnected()
+            }
+        }
+
+        networkChangeReceiver = NetworkChangeReceiver(this, networkChangeListener)
+    }
+
+    open fun actionNetworkConnected() {}
+
+    @SuppressLint("ObsoleteSdkInt")
     private fun setupLanguage() {
         val language: String = SpManager.getInstance(this).getLanguage().languageCode
         if (language.isNotEmpty()) {
@@ -97,7 +111,6 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
             createConfigurationContext(config)
         }
     }
-
 
     open fun handleOnBackPressed() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
