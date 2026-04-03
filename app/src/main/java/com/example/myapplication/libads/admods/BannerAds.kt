@@ -8,6 +8,7 @@ import android.view.View
 import com.example.myapplication.libads.base.BaseAds
 import com.example.myapplication.libads.event.MMPManager.logAdRevenue
 import com.example.myapplication.libads.helper.CollapsiblePositionType
+import com.example.myapplication.utils.ViewEx.gone
 import com.facebook.appevents.AppEventsLogger
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.ads.mediation.admob.AdMobAdapter
@@ -83,6 +84,10 @@ class BannerAds(
         parent: ShimmerFrameLayout,
         onFailed: () -> Unit
     ) {
+        if (isPro()) {
+            parent.gone()
+            return
+        }
         val adSize = getAdSize(activity, parent)
         val request = buildAdRequest()
 

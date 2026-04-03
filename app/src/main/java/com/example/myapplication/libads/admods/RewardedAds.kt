@@ -35,6 +35,10 @@ class RewardedAds(
     }
 
     fun load(onAdmobLoadListener: OnAdmobLoadListener?) {
+        if (isPro()) {
+            onAdmobLoadListener?.onLoad()
+            return
+        }
         if (isLoading || rewardedAd != null) return
 
         isLoading = true
@@ -80,6 +84,11 @@ class RewardedAds(
     }
 
     fun show(activity: Activity, onAdmobShowListener: OnAdmobShowListener) {
+        if (isPro()) {
+            onAdmobShowListener.onShow()
+            onAdmobShowListener.onClosed()
+            return
+        }
         Log.i(TAG, "show rewarded")
         earnReward = false
 

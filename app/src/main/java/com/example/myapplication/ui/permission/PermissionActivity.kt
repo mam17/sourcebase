@@ -36,7 +36,7 @@ class PermissionActivity : BaseActivity<ActivityPermissionBinding>() {
     }
 
     private fun initNativeAd() {
-        NativeAdsUtil.loadNativeFeature(isCheckOpenApp) { nativeAd ->
+        NativeAdsUtil.loadNativeFeature() { nativeAd ->
             nativeAd.getNativeAdLive().observeOnce(this@PermissionActivity) {
                 if (nativeAd.available()) {
                     viewBinding.shimmerNativeFeature.visible()

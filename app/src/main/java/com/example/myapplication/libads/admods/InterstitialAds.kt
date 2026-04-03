@@ -41,6 +41,10 @@ class InterstitialAds(
     /* ================= LOAD ================= */
 
     fun load(callback: OnAdmobLoadListener, timeoutMillis: Long = 30_000L) {
+        if (isPro()) {
+            callback.onLoad() // Still call onLoad to allow app logic to continue
+            return
+        }
         if (isLoading || interstitialAd != null) {
             Log.i(TAG, "load() ignored (loading or already loaded) - $adPlacement")
             return
@@ -96,6 +100,11 @@ class InterstitialAds(
     /* ================= SHOW ================= */
 
     fun show(activity: Activity, listener: OnAdmobShowListener) {
+        if (isPro()) {
+            listener.onShow()
+            listener.onClosed()
+            return
+        }
         val ad = interstitialAd
         if (ad == null || isShowing || activity.isFinishing || activity.isDestroyed) {
             listener.onError("inter not available")

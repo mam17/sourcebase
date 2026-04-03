@@ -128,7 +128,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     }
 
     private fun showNativeHome() {
-        NativeAdsUtil.loadNativeHome(isCheckOpenApp) { nativeAd ->
+        NativeAdsUtil.loadNativeHome { nativeAd ->
             nativeAd.getNativeAdLive().observeOnce(this@MainActivity) {
                 if (nativeAd.available()) {
                     viewBinding.flAdplaceholder.visible()

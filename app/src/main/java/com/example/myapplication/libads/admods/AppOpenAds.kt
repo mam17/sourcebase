@@ -38,6 +38,10 @@ class AppOpenAds(
     }
 
     fun loadAd(activity: Activity, listener: OnAdmobLoadListener?) {
+        if (isPro()) {
+            listener?.onLoad()
+            return
+        }
         Log.i(TAG, "loadAd()")
 
         if (isLoadingAd || isAdAvailable()) {
@@ -98,6 +102,7 @@ class AppOpenAds(
     }
 
     fun showAdAppOnResume(currentActivity: Activity?) {
+        if (isPro()) return
         if (currentActivity == null || currentActivity.isFinishing || currentActivity.isDestroyed) {
             Log.i(TAG, "Activity not valid → skip showing AppOpen")
             return

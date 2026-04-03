@@ -6,8 +6,10 @@ import com.example.myapplication.App
 import com.example.myapplication.libads.admods.NativeAds
 import com.example.myapplication.libads.firebase.FirebaseConfigManager
 import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
+import com.example.myapplication.utils.SpManager
 
 object NativeAdsUtil {
+
     @SuppressLint("StaticFieldLeak")
     var splashNativeFullAdmob: NativeAds? = null
 
@@ -15,10 +17,10 @@ object NativeAdsUtil {
     var languageNativeAdmob1: NativeAds? = null
 
     @SuppressLint("StaticFieldLeak")
-    var homeNativeAdmob: NativeAds? = null
+    var languageNativeAdmob2: NativeAds? = null
 
     @SuppressLint("StaticFieldLeak")
-    var languageNativeAdmob2: NativeAds? = null
+    var homeNativeAdmob: NativeAds? = null
 
     @SuppressLint("StaticFieldLeak")
     var onbNativeFullScreenAdmob: NativeAds? = null
@@ -29,127 +31,111 @@ object NativeAdsUtil {
     @SuppressLint("StaticFieldLeak")
     var featureNativeAdmob: NativeAds? = null
 
-    fun loadNativeFullSplash(isFirstOpenApp: Boolean, onAdLoaded: ((NativeAds) -> Unit)? = null) {
-        if (App.instance?.let { com.example.myapplication.utils.SpManager.getInstance(it).isPro() } == true) return
-        if (!FirebaseConfigManager.instance().isEnableAllAds) return
+
+    fun loadNativeFullSplash(
+        isFirstOpenApp: Boolean,
+        onAdLoaded: ((NativeAds) -> Unit)? = null
+    ) {
+        splashNativeFullAdmob?.destroy()
         val config = FirebaseConfigManager.instance().adConfig
-        if (!config.native_fs_splash.enabled && !config.native_fs_splash_2f.enabled) return
 
-        val id2F = config.native_fs_splash_2f.id
-        val id1F = config.native_fs_splash.id
+        if (!config.native_fs_splash.enabled &&
+            !config.native_fs_splash_2f.enabled
+        ) return
 
-        loadWithFallback(
-            idPrimary = id2F,
-            idFallback = id1F,
-            adPlacement = AdPlacement.NATIVE_FS_SPLASH,
+        loadNative(
+            idPrimary = config.native_fs_splash_2f.id,
+            idFallback = config.native_fs_splash.id,
+            placement = AdPlacement.NATIVE_FS_SPLASH,
             onLoaded = {
                 splashNativeFullAdmob = it
                 onAdLoaded?.invoke(it)
-            },
-            onFailed = {
             }
         )
     }
+
 
     fun loadNativeLanguage1(
         isFirstOpenApp: Boolean,
         onAdLoaded: ((NativeAds) -> Unit)? = null
     ) {
-        if (App.instance?.let { com.example.myapplication.utils.SpManager.getInstance(it).isPro() } == true) return
-        if (!FirebaseConfigManager.instance().isEnableAllAds) return
+        languageNativeAdmob1?.destroy()
+
         val config = FirebaseConfigManager.instance().adConfig
-        val adUnit = if (isFirstOpenApp) config.native_language_1_1 else config.native_language_2_1
+        val adUnit =
+            if (isFirstOpenApp) config.native_language_1_1
+            else config.native_language_2_1
 
         if (!adUnit.enabled) return
 
-        val id1F =
-            adUnit.id
-
-        loadWithFallback(
-            idPrimary = id1F,
-            adPlacement = AdPlacement.NATIVE_LANGUAGE1,
+        loadNative(
+            idPrimary = adUnit.id,
+            placement = AdPlacement.NATIVE_LANGUAGE1,
             onLoaded = {
                 languageNativeAdmob1 = it
-                Log.d("TAG_ADS_Native", "loadNativeLanguage1 loaded!")
+                Log.d("TAG_ADS_Native", "loadNativeLanguage1 loaded")
                 onAdLoaded?.invoke(it)
-            },
-            onFailed = {
-                Log.d("TAG_ADS_Native", "loadNativeLanguage1: all IDs failed")
             }
         )
     }
+
 
     fun loadNativeLanguage2(
         isFirstOpenApp: Boolean,
         onAdLoaded: ((NativeAds) -> Unit)? = null
     ) {
-        if (!FirebaseConfigManager.instance().isEnableAllAds) return
+        languageNativeAdmob2?.destroy()
+
         val config = FirebaseConfigManager.instance().adConfig
-        val adUnit = if (isFirstOpenApp) config.native_language_1_2 else config.native_language_2_2
+        val adUnit =
+            if (isFirstOpenApp) config.native_language_1_2
+            else config.native_language_2_2
 
         if (!adUnit.enabled) return
 
-        val idMain = adUnit.id
-
-        loadWithFallback(
-            idPrimary = idMain,
-            adPlacement = AdPlacement.NATIVE_LANGUAGE2,
+        loadNative(
+            idPrimary = adUnit.id,
+            placement = AdPlacement.NATIVE_LANGUAGE2,
             onLoaded = {
                 languageNativeAdmob2 = it
-                Log.d("TAG_ADS_Native", "loadNativeLanguage2 loaded!")
+                Log.d("TAG_ADS_Native", "loadNativeLanguage2 loaded")
                 onAdLoaded?.invoke(it)
-            },
-            onFailed = {
-                Log.d("TAG_ADS_Native", "loadNativeLanguage2: all IDs failed")
             }
         )
     }
-
-
-//    fun loadNativeOnboarding1(isShowAds: Boolean, isFirstOpenApp: Boolean) {
-//        if (!isShowAds) return
-//
-//        val id1F = if (isFirstOpenApp) BuildConfig.native_onboarding_1 else BuildConfig.native_onboarding_2_1
-//
-//        loadWithFallback(
-//            idPrimary = id1F,
-//            adPlacement = AdPlacement.NATIVE_ONBOARDING,
-//            onLoaded = {
-//                onboardingNativeAdmob1 = it
-//                Log.d("TAG_ADS_Native", "loadNativeOnboarding1 loaded!")
-//            },
-//            onFailed = {
-//                Log.d("TAG_ADS_Native", "loadNativeOnboarding1: all IDs failed")
-//            }
-//        )
-//    }
-
     fun loadNativeFullScreenOnb(
         isFirstOpenApp: Boolean,
         onAdLoaded: ((NativeAds) -> Unit)? = null
     ) {
-        if (!FirebaseConfigManager.instance().isEnableAllAds) return
+        onbNativeFullScreenAdmob?.destroy()
+
         val config = FirebaseConfigManager.instance().adConfig
-        if (!config.native_fs_1_1.enabled && !config.native_fs_1_2f.enabled && !config.native_fs_2_1.enabled && !config.native_fs_2_1f.enabled) return
+
+        if (!config.native_fs_1_1.enabled &&
+            !config.native_fs_1_2f.enabled &&
+            !config.native_fs_2_1.enabled &&
+            !config.native_fs_2_1f.enabled
+        ) return
 
         val id1F = if (isFirstOpenApp) {
             config.native_fs_1_1.id
         } else {
             config.native_fs_2_1.id
         }
+
         val id2F = if (isFirstOpenApp) {
             config.native_fs_1_2f.id
         } else {
             config.native_fs_2_1f.id
         }
 
-        loadWithFallback(
+        loadNative(
             idPrimary = id2F,
             idFallback = id1F,
-            adPlacement = AdPlacement.NATIVE_FULL_SCREEN_ONBOARDING,
+            placement = AdPlacement.NATIVE_FULL_SCREEN_ONBOARDING,
             onLoaded = {
                 onbNativeFullScreenAdmob = it
-                Log.d("TAG_ADS_Native", "loadNativeFullScreenOnb loaded!")
+                Log.d("TAG_ADS_Native", "loadNativeFullScreenOnb loaded")
                 onAdLoaded?.invoke(it)
             },
             onFailed = {
@@ -157,14 +143,18 @@ object NativeAdsUtil {
             }
         )
     }
-
     fun loadNativeFullScreenOnb2(
         isFirstOpenApp: Boolean,
         onAdLoaded: ((NativeAds) -> Unit)? = null
     ) {
-        if (!FirebaseConfigManager.instance().isEnableAllAds) return
+        onbNativeFullScreenAdmob2?.destroy()
+
         val config = FirebaseConfigManager.instance().adConfig
-        if (!config.native_fs_2_1.enabled && !config.native_fs_2_2.enabled && !config.native_fs_2_2f.enabled) return
+
+        if (!config.native_fs_2_1.enabled &&
+            !config.native_fs_2_2.enabled &&
+            !config.native_fs_2_2f.enabled
+        ) return
 
         val id1F = if (isFirstOpenApp) {
             config.native_fs_2_1.id
@@ -174,13 +164,13 @@ object NativeAdsUtil {
 
         val id2F = config.native_fs_2_2f.id
 
-        loadWithFallback(
+        loadNative(
             idPrimary = id2F,
             idFallback = id1F,
-            adPlacement = AdPlacement.NATIVE_FULL_SCREEN_ONBOARDING2,
+            placement = AdPlacement.NATIVE_FULL_SCREEN_ONBOARDING2,
             onLoaded = {
                 onbNativeFullScreenAdmob2 = it
-                Log.d("TAG_ADS_Native", "loadNativeFullScreenOnb2 loaded!")
+                Log.d("TAG_ADS_Native", "loadNativeFullScreenOnb2 loaded")
                 onAdLoaded?.invoke(it)
             },
             onFailed = {
@@ -188,80 +178,98 @@ object NativeAdsUtil {
             }
         )
     }
-
-    fun loadNativeFeature(
-        isFirstOpenApp: Boolean,
+    fun loadNativeHome(
         onAdLoaded: ((NativeAds) -> Unit)? = null
     ) {
-        if (App.instance?.let { com.example.myapplication.utils.SpManager.getInstance(it).isPro() } == true) return
-        if (!FirebaseConfigManager.instance().isEnableAllAds) return
+        homeNativeAdmob?.destroy()
+
+        val config = FirebaseConfigManager.instance().adConfig
+        val adUnit = config.native_home
+
+        if (!adUnit.enabled) return
+
+        loadNative(
+            idPrimary = adUnit.id,
+            placement = AdPlacement.NATIVE_HOME,
+            onLoaded = {
+                homeNativeAdmob = it
+                Log.d("TAG_ADS_Native", "loadNativeHome loaded")
+                onAdLoaded?.invoke(it)
+            }
+        )
+    }
+
+
+    fun loadNativeFeature(
+        onAdLoaded: ((NativeAds) -> Unit)? = null
+    ) {
+        featureNativeAdmob?.destroy()
+
         val config = FirebaseConfigManager.instance().adConfig
         val adUnit = config.native_feature
 
         if (!adUnit.enabled) return
 
-        val idMain = adUnit.id
-
-        loadWithFallback(
-            idPrimary = idMain,
-            adPlacement = AdPlacement.NATIVE_PERMISSION,
+        loadNative(
+            idPrimary = adUnit.id,
+            placement = AdPlacement.NATIVE_PERMISSION,
             onLoaded = {
                 featureNativeAdmob = it
-                Log.d("TAG_ADS_Native", "loadNativeFeature loaded!")
+                Log.d("TAG_ADS_Native", "loadNativeFeature loaded")
                 onAdLoaded?.invoke(it)
-            },
-            onFailed = {
-                Log.d("TAG_ADS_Native", "loadNativeFeature: all IDs failed")
             }
         )
     }
 
-//    fun loadNativeFeature(isFirstOpenApp: Boolean) {
-//        val config = FirebaseConfigManager.instance().adConfig
-//        if (!config.native_feature.enabled) return
-//
-//        val id1F = config.native_feature.id.ifEmpty { BuildConfig.native_feature }
-//
-//        loadWithFallback(
-//            idPrimary = id1F,
-//            adPlacement = AdPlacement.NATIVE_PERMISSION,
-//            onLoaded = {
-//                featureNativeAdmob = it
-//                Log.d("TAG_ADS_Native", "loadNativeFeature loaded!")
-//            },
-//            onFailed = {
-//                Log.d("TAG_ADS_Native", "loadNativeFeature: all IDs failed")
-//            }
-//        )
-//    }
+    private fun canLoadAds(): Boolean {
+        val context = App.instance ?: return false
 
-    fun loadNativeHome(
-        isFirstOpenApp: Boolean,
-        onAdLoaded: ((NativeAds) -> Unit)? = null
+        if (SpManager.getInstance(context).isPro()) return false
+        if (!FirebaseConfigManager.instance().isEnableAllAds) return false
+
+        return true
+    }
+
+    private fun loadNative(
+        idPrimary: String,
+        idFallback: String? = null,
+        placement: String,
+        onLoaded: (NativeAds) -> Unit,
+        onFailed: (() -> Unit)? = null
     ) {
-        if (App.instance?.let { com.example.myapplication.utils.SpManager.getInstance(it).isPro() } == true) return
-        if (!FirebaseConfigManager.instance().isEnableAllAds) return
-        val config = FirebaseConfigManager.instance().adConfig
-        Log.i("TAG_ADS_Native", "loadNativeHome: id1F $config")
 
-        val adUnit = config.native_home
-
-        if (!adUnit.enabled) return
-
-        val id1F = adUnit.id
+        if (!canLoadAds()) return
 
         loadWithFallback(
-            idPrimary = id1F,
-            adPlacement = AdPlacement.NATIVE_HOME,
-            onLoaded = {
-                homeNativeAdmob = it
-                Log.d("TAG_ADS_Native", "loadNativeHome loaded!")
-                onAdLoaded?.invoke(it)
-            },
-            onFailed = {
-                Log.d("TAG_ADS_Native", "loadNativeHome: all IDs failed")
-            }
+            idPrimary = idPrimary,
+            idFallback = idFallback,
+            adPlacement = placement,
+            onLoaded = onLoaded,
+            onFailed = onFailed
         )
+    }
+
+    fun destroyAllAds() {
+        splashNativeFullAdmob?.destroy()
+        splashNativeFullAdmob = null
+
+        languageNativeAdmob1?.destroy()
+        languageNativeAdmob1 = null
+
+        languageNativeAdmob2?.destroy()
+        languageNativeAdmob2 = null
+
+        homeNativeAdmob?.destroy()
+        homeNativeAdmob = null
+
+        onbNativeFullScreenAdmob?.destroy()
+        onbNativeFullScreenAdmob = null
+
+        onbNativeFullScreenAdmob2?.destroy()
+        onbNativeFullScreenAdmob2 = null
+
+        featureNativeAdmob?.destroy()
+        featureNativeAdmob = null
     }
 
     fun loadWithFallback(
@@ -271,7 +279,7 @@ object NativeAdsUtil {
         onLoaded: (NativeAds) -> Unit,
         onFailed: (() -> Unit)? = null
     ) {
-        if (App.instance?.let { com.example.myapplication.utils.SpManager.getInstance(it).isPro() } == true) return
+        if (App.instance?.let { SpManager.getInstance(it).isPro() } == true) return
 
         fun loadAd(id: String, next: (() -> Unit)? = null) {
             if (id.isEmpty()) {

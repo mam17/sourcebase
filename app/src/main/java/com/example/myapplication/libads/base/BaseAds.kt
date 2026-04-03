@@ -5,6 +5,7 @@ import android.content.Context
 import android.provider.Settings
 import com.example.myapplication.BuildConfig
 import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
+import com.example.myapplication.utils.SpManager
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
@@ -55,6 +56,10 @@ open class BaseAds(val context: Context) {
         adRequestBuilder = AdRequest.Builder()
             .setRequestAgent(AdRequest.DEVICE_ID_EMULATOR)
             .setRequestAgent(deviceId)
+    }
+
+    protected fun isPro(): Boolean {
+        return SpManager.getInstance(context).isPro()
     }
 
 }

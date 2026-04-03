@@ -9,6 +9,7 @@ import com.example.myapplication.libads.firebase.FirebaseConfigManager
 import com.example.myapplication.libads.dialog.DialogLoadingAds
 import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
 import com.example.myapplication.libads.interfaces.OnAdmobShowListener
+import com.example.myapplication.utils.SpManager
 
 class RewardedAdsUtil(
     private val context: Context,
@@ -27,7 +28,10 @@ class RewardedAdsUtil(
     private var dialogLoading: DialogLoadingAds? = null
 
     fun load(callback: OnAdmobLoadListener) {
-        if (com.example.myapplication.utils.SpManager.getInstance(context).isPro()) return
+        if (SpManager.getInstance(context).isPro()) {
+            callback.onLoad()
+            return
+        }
         if (!isEnable || !FirebaseConfigManager.instance().isEnableAllAds) {
             callback.onError("Ad disabled: $adPlacement")
             return
@@ -85,7 +89,7 @@ class RewardedAdsUtil(
     }
 
     fun show(activity: Activity, listener: OnAdmobShowListener, autoLoadAndShow: Boolean = false) {
-        if (com.example.myapplication.utils.SpManager.getInstance(context).isPro()) {
+        if (SpManager.getInstance(context).isPro()) {
             listener.onShow()
             listener.onClosed()
             return

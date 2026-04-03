@@ -47,14 +47,23 @@ class NativeAds(
     private var canReload = false
     private val handler = Handler(Looper.getMainLooper())
 
-    private val nativeAdLive = MutableLiveData<NativeAd>()
+    private val nativeAdLive = MutableLiveData<NativeAd?>()
 
     fun available(): Boolean = nativeAdLive.value != null
 
-    fun getNativeAdLive(): MutableLiveData<NativeAd> = nativeAdLive
+    fun getNativeAdLive(): MutableLiveData<NativeAd?> = nativeAdLive
 
     private fun setNativeAd(nativeAd: NativeAd) {
         nativeAdLive.postValue(nativeAd)
+    }
+
+    fun destroy() {
+        Log.i(TAG, "destroy() - $adPlacement")
+        handler.removeCallbacksAndMessages(null)
+        onAdmobLoadListener = null
+        val ad = nativeAdLive.value
+        ad?.destroy()
+        nativeAdLive.postValue(null)
     }
 
     // ========================= SHOW AD ==============================
@@ -63,6 +72,11 @@ class NativeAds(
         nativeAdViewId: Int,
         onNativeShowListener: OnAdmobShowListener?
     ) {
+        if (isPro()) {
+            parent.gone()
+            onNativeShowListener?.onShow()
+            return
+        }
         val ad = nativeAdLive.value
         if (ad != null) {
             try {
@@ -109,6 +123,10 @@ class NativeAds(
         timeoutMillis: Long,
         nativeFull: Boolean
     ) {
+        if (isPro()) {
+            listener?.onLoad()
+            return
+        }
         indexDebug = indexLoadNative++
         Log.i(TAG, "NativeAdmob: $id indexDebug: $indexDebug")
 

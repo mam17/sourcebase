@@ -121,13 +121,18 @@ internal class IapFactoryImpl(
         val params = QueryProductDetailsParams.newBuilder().setProductList(productList)
         billingClient.queryProductDetailsAsync(params.build()) { billingResult, productDetailsList ->
             if (billingResult.isOk()) {
+                val foundCount = productDetailsList.productDetailsList.size
+                Log.d(TAG, "sync: Query OK, found $foundCount products")
                 productDetailsList.productDetailsList.forEach { pd ->
                     productDetailsMap[pd.productId] = pd
+                    Log.d(TAG, "sync: Loaded product: ${pd.productId} - ${pd.title}")
                 }
                 val priceMap = productDetailsMap.mapValues { (_, pd) ->
                     pd.toIapProductPrices()
                 }
                 dispatchPricesUpdated(priceMap)
+            } else {
+                Log.e(TAG, "sync: Query FAILED: code=${billingResult.responseCode}, msg=${billingResult.debugMessage}")
             }
             onDone()
         }
@@ -180,7 +185,7 @@ internal class IapFactoryImpl(
     ) {
         sku.toProductDetails(type) { details ->
             if (details == null) {
-                log("launchBillingFlow: product details not found for $sku")
+                Log.e(TAG, "launchBillingFlow: product details not found for $sku. Make sure it's active in Play Console.")
                 return@toProductDetails
             }
 

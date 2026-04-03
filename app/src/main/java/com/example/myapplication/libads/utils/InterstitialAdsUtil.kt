@@ -9,6 +9,7 @@ import com.example.myapplication.libads.dialog.DialogLoadingAds
 import com.example.myapplication.libads.firebase.FirebaseConfigManager
 import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
 import com.example.myapplication.libads.interfaces.OnAdmobShowListener
+import com.example.myapplication.utils.SpManager
 
 class InterstitialAdsUtil(
     private val context: Context,
@@ -33,7 +34,7 @@ class InterstitialAdsUtil(
     private var dialogLoading: DialogLoadingAds? = null
 
     fun load(callback: OnAdmobLoadListener? = null) {
-        if (com.example.myapplication.utils.SpManager.getInstance(context).isPro()) return
+        if (SpManager.getInstance(context).isPro()) return
         if (!isEnable || !FirebaseConfigManager.instance().isEnableAllAds) return
 
         val currentTime = System.currentTimeMillis()
@@ -84,7 +85,7 @@ class InterstitialAdsUtil(
     }
 
     fun show(activity: Activity, listener: OnAdmobShowListener, autoLoadAndShow: Boolean = false) {
-        if (com.example.myapplication.utils.SpManager.getInstance(context).isPro()) {
+        if (SpManager.getInstance(context).isPro()) {
             listener.onShow()
             listener.onClosed()
             return
