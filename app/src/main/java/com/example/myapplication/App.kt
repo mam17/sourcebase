@@ -24,6 +24,10 @@ import com.example.myapplication.libads.firebase.FirebaseConfigManager
 import com.example.myapplication.libads.utils.AdPlacement
 import com.example.myapplication.libads.utils.AdsEx
 import com.example.myapplication.libads.utils.AppOpenAdsUtil
+import com.afproject.iap.IapFactory
+import com.afproject.iap.IapItem
+import com.afproject.iap.IapType
+import com.example.myapplication.billing.IapAppIntegration
 import com.example.myapplication.utils.AppEx.setAppLanguage
 import com.example.myapplication.utils.Constant
 import com.example.myapplication.utils.LocaleHelper
@@ -96,6 +100,17 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
 
         FirebaseApp.initializeApp(this)
         FirebaseConfigManager.instance().fetch()
+
+        IapFactory.initialize(
+            this,
+            listOf(
+                IapItem(Constant.PRODUCT_ID_YEAR, IapType.SUBSCRIPTION),
+                IapItem(Constant.PRODUCT_ID_WEEK, IapType.SUBSCRIPTION),
+                IapItem(Constant.PRODUCT_ID_REMOVE_ADS, IapType.PURCHASE),
+            ),
+            debugMode = false,
+        )
+        IapAppIntegration.registerProSync(this)
     }
 
     fun initSDKs() {
@@ -336,12 +351,10 @@ class App : Application(), Application.ActivityLifecycleCallbacks, DefaultLifecy
                 .setTTAppId(tiktokAppId).openDebugMode()
                 .setLogLevel(TikTokBusinessSdk.LogLevel.DEBUG)
                 .openDebugMode()
-                .enableAutoIapTrack()
         } else {
             TikTokBusinessSdk.TTConfig(applicationContext)
                 .setAppId(applicationContext.packageName)
                 .setTTAppId(tiktokAppId)
-                .enableAutoIapTrack()
         }
         TikTokBusinessSdk.initializeSdk(ttConfig, object : TikTokBusinessSdk.TTInitCallback {
             override fun success() {}

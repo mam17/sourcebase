@@ -30,6 +30,7 @@ object NativeAdsUtil {
     var featureNativeAdmob: NativeAds? = null
 
     fun loadNativeFullSplash(isFirstOpenApp: Boolean, onAdLoaded: ((NativeAds) -> Unit)? = null) {
+        if (App.instance?.let { com.example.myapplication.utils.SpManager.getInstance(it).isPro() } == true) return
         if (!FirebaseConfigManager.instance().isEnableAllAds) return
         val config = FirebaseConfigManager.instance().adConfig
         if (!config.native_fs_splash.enabled && !config.native_fs_splash_2f.enabled) return
@@ -54,6 +55,7 @@ object NativeAdsUtil {
         isFirstOpenApp: Boolean,
         onAdLoaded: ((NativeAds) -> Unit)? = null
     ) {
+        if (App.instance?.let { com.example.myapplication.utils.SpManager.getInstance(it).isPro() } == true) return
         if (!FirebaseConfigManager.instance().isEnableAllAds) return
         val config = FirebaseConfigManager.instance().adConfig
         val adUnit = if (isFirstOpenApp) config.native_language_1_1 else config.native_language_2_1
@@ -191,6 +193,7 @@ object NativeAdsUtil {
         isFirstOpenApp: Boolean,
         onAdLoaded: ((NativeAds) -> Unit)? = null
     ) {
+        if (App.instance?.let { com.example.myapplication.utils.SpManager.getInstance(it).isPro() } == true) return
         if (!FirebaseConfigManager.instance().isEnableAllAds) return
         val config = FirebaseConfigManager.instance().adConfig
         val adUnit = config.native_feature
@@ -236,6 +239,7 @@ object NativeAdsUtil {
         isFirstOpenApp: Boolean,
         onAdLoaded: ((NativeAds) -> Unit)? = null
     ) {
+        if (App.instance?.let { com.example.myapplication.utils.SpManager.getInstance(it).isPro() } == true) return
         if (!FirebaseConfigManager.instance().isEnableAllAds) return
         val config = FirebaseConfigManager.instance().adConfig
         Log.i("TAG_ADS_Native", "loadNativeHome: id1F $config")
@@ -267,6 +271,8 @@ object NativeAdsUtil {
         onLoaded: (NativeAds) -> Unit,
         onFailed: (() -> Unit)? = null
     ) {
+        if (App.instance?.let { com.example.myapplication.utils.SpManager.getInstance(it).isPro() } == true) return
+
         fun loadAd(id: String, next: (() -> Unit)? = null) {
             if (id.isEmpty()) {
                 next?.invoke() ?: onFailed?.invoke()

@@ -15,7 +15,6 @@ import com.example.myapplication.ui.permission.PermissionActivity
 import com.example.myapplication.utils.ViewEx.gone
 import com.example.myapplication.utils.ViewEx.visible
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.collections.get
 
 @AndroidEntryPoint
 class OnBoardingActivity : BaseActivity<ActivityOnBoardingBinding>() {
@@ -55,11 +54,6 @@ class OnBoardingActivity : BaseActivity<ActivityOnBoardingBinding>() {
                     PermissionActivity.start(this@OnBoardingActivity)
                     finish()
                 }
-            }
-
-            btnStart.setOnClickListener {
-                PermissionActivity.start(this@OnBoardingActivity)
-                finish()
             }
         }
     }
@@ -145,16 +139,6 @@ class OnBoardingActivity : BaseActivity<ActivityOnBoardingBinding>() {
                 buttonNext.gone()
                 navigationLayout.gone()
             }
-        }
-    }
-
-    private fun switchBtnNext(boolean: Boolean) {
-        if (boolean) {
-            viewBinding.rlDotNext.gone()
-            viewBinding.btnStart.visible()
-        } else {
-            viewBinding.rlDotNext.visible()
-            viewBinding.btnStart.gone()
         }
     }
 }

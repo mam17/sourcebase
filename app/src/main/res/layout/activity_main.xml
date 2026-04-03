@@ -10,6 +10,15 @@
     android:paddingTop="?attr/actionBarSize">
 
     <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnBuyPro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Buy Pro (Remove Ads)"
+        android:backgroundTint="@color/black"
+        android:textColor="@color/white"
+        android:layout_marginBottom="16dp" />
+
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnReward"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

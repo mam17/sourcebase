@@ -62,15 +62,5 @@
                 tools:ignore="SpUsage" />
         </RelativeLayout>
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnStart"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/size20"
-            android:layout_marginBottom="@dimen/size16"
-            android:text="@string/txt_get_start"
-            android:textAllCaps="false"
-            android:textColor="@color/white" />
-
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

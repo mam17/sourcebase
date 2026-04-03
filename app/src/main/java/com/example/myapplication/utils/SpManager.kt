@@ -121,4 +121,12 @@ class SpManager @Inject constructor(private val preferences: SharedPreferences) 
             }
         }
     }
+
+    fun isPro(): Boolean {
+        return preferences.getBoolean(Constant.KEY_SP_IS_PRO, false)
+    }
+
+    fun setPro(isPro: Boolean) {
+        preferences.edit { putBoolean(Constant.KEY_SP_IS_PRO, isPro) }
+    }
 }

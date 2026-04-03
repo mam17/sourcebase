@@ -22,7 +22,9 @@
         android:theme="@style/AppTheme"
         tools:replace="android:dataExtractionRules,android:fullBackupContent"
         tools:targetApi="31">
-
+        <activity
+            android:name=".ui.ui.RewardActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.permission.PermissionActivity"
             android:exported="false" />
@@ -37,14 +39,13 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ui.MainActivity"
             android:exported="true" />
-
         <activity
             android:name=".ui.ui.FullScreenActivity"
             android:excludeFromRecents="true"
@@ -59,7 +60,6 @@
         <receiver
             android:name=".broadcasts.FullScreenReceiver"
             android:exported="true" />
-
         <receiver
             android:name=".broadcasts.BootReceiver"
             android:enabled="true"
@@ -67,24 +67,19 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
-        </receiver>
-
-        <!-- Chỉ GIỮ 1 dòng này -->
+        </receiver> <!-- Chỉ GIỮ 1 dòng này -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="${ad_app_id}" />
-
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
         <meta-data
             android:name="com.facebook.sdk.ClientToken"
             android:value="@string/facebook_client_token" />
-
         <meta-data
             android:name="com.tiktok.sdk.AppId"
             android:value="717171717171717171" />
-
         <meta-data
             android:name="appsflyer_autoStart"
             android:value="true" />

@@ -37,6 +37,9 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity() {
     private var networkChangeListener: NetworkChangeListener? = null
     private var networkChangeReceiver: NetworkChangeReceiver? = null
     val remoteConfig get() = FirebaseConfigManager.instance().adConfig
+    
+    val isPro get() = spManager.isPro()
+
     open fun onBack() {
         finish()
     }

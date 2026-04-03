@@ -27,6 +27,7 @@ class RewardedAdsUtil(
     private var dialogLoading: DialogLoadingAds? = null
 
     fun load(callback: OnAdmobLoadListener) {
+        if (com.example.myapplication.utils.SpManager.getInstance(context).isPro()) return
         if (!isEnable || !FirebaseConfigManager.instance().isEnableAllAds) {
             callback.onError("Ad disabled: $adPlacement")
             return
@@ -84,6 +85,12 @@ class RewardedAdsUtil(
     }
 
     fun show(activity: Activity, listener: OnAdmobShowListener, autoLoadAndShow: Boolean = false) {
+        if (com.example.myapplication.utils.SpManager.getInstance(context).isPro()) {
+            listener.onShow()
+            listener.onClosed()
+            return
+        }
+
         if (!isEnable || !FirebaseConfigManager.instance().isEnableAllAds) {
             listener.onError("Ad disabled: $adPlacement")
             return

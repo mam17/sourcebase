@@ -16,6 +16,7 @@ import com.example.myapplication.libads.utils.InterstitialAdsUtil
 import com.example.myapplication.libads.utils.NativeAdsUtil
 import com.example.myapplication.libads.utils.RewardedAdsUtil
 import com.example.myapplication.ui.language.LanguageActivity
+import com.example.myapplication.ui.ui.RewardActivity
 import com.example.myapplication.utils.AppEx.observeOnce
 import com.example.myapplication.utils.NotificationUtil
 import com.example.myapplication.utils.ViewEx.gone
@@ -55,10 +56,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         NotificationUtil.createNotificationChannel(this)
-
+        spManager.saveFirstOpenApp()
         App.instance?.loadAdsOpenResume()
 
-        showNativeHome()
+        viewBinding.btnBuyPro.setOnClickListener {
+            startActivity(Intent(this, RewardActivity::class.java))
+        }
 
         viewBinding.btnInterHome.setOnClickListener {
             showInterHome {
@@ -79,6 +82,17 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (isPro) {
+            viewBinding.btnBuyPro.gone()
+            viewBinding.flAdplaceholder.gone()
+        } else {
+            viewBinding.btnBuyPro.visible()
+            showNativeHome()
+        }
+    }
+
     fun showRewardAds(action: () -> Unit) {
         rewardedAd.show(this, object : OnAdmobShowListener {
             override fun onShow() {
@@ -89,6 +103,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             override fun onError(e: String) {
                 Log.d("TAG_REWARD", "Show rewarded error: $e")
                 showToast("The advertisement is not yet ready.")
+                action.invoke() // Still let user proceed if Pro or for UX
             }
         }, true)
     }

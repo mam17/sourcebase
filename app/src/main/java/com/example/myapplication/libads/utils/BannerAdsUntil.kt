@@ -1,20 +1,25 @@
 package com.example.myapplication.libads.utils
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import com.example.myapplication.App
 import com.example.myapplication.libads.admods.BannerAdLoader
 import com.example.myapplication.libads.firebase.FirebaseConfigManager
 import com.example.myapplication.libads.admods.BannerAds
 import com.example.myapplication.libads.helper.CollapsiblePositionType
+import com.example.myapplication.utils.SpManager
 import com.facebook.shimmer.ShimmerFrameLayout
 import java.util.Timer
 import kotlin.concurrent.timer
 
 object BannerAdsUntil {
     private const val TAG = "TAG_BannerAdsUntil"
+    @SuppressLint("StaticFieldLeak")
     private var bannerAds: BannerAds? = null
+    @SuppressLint("StaticFieldLeak")
     private var bannerAdAdaptive: BannerAdLoader? = null
     private val handler = Handler(Looper.getMainLooper())
     private var bannerTimer: Timer? = null
@@ -25,6 +30,10 @@ object BannerAdsUntil {
 
     // ------------------- Banner -------------------
     fun initBannerAdaptive(activity: Activity, adUnit: String, shimmer: ShimmerFrameLayout) {
+        if (SpManager.getInstance(activity).isPro()) {
+            shimmer.visibility = android.view.View.GONE
+            return
+        }
         if (!FirebaseConfigManager.instance().isEnableAllAds) {
             shimmer.visibility = android.view.View.GONE
             return
@@ -35,6 +44,7 @@ object BannerAdsUntil {
 
     fun loadBanner() {
         if (!FirebaseConfigManager.instance().isEnableAllAds) return
+        if (App.instance?.let { SpManager.getInstance(it).isPro() } == true) return
         bannerAdAdaptive?.loadBanner()
     }
 
@@ -65,6 +75,10 @@ object BannerAdsUntil {
         shimmer: ShimmerFrameLayout,
         collapsiblePosition: CollapsiblePositionType = CollapsiblePositionType.NONE
     ) {
+        if (SpManager.getInstance(activity).isPro()) {
+            shimmer.visibility = android.view.View.GONE
+            return
+        }
         if (!FirebaseConfigManager.instance().isEnableAllAds) {
             shimmer.visibility = android.view.View.GONE
             return
@@ -87,6 +101,7 @@ object BannerAdsUntil {
 
 
     fun reloadBanner() {
+        if (App.instance?.let { SpManager.getInstance(it).isPro() } == true) return
         bannerAds?.reload()
     }
 

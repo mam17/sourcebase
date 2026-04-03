@@ -12,6 +12,8 @@ import com.example.myapplication.base.activity.BaseActivity
 import com.example.myapplication.databinding.ActivitySplashBinding
 import com.example.myapplication.libads.admods.InterstitialAds
 import com.example.myapplication.libads.admods.NativeAds
+import com.afproject.iap.IapFactory
+import com.afproject.iap.listener.BillingClientConnectionListener
 import com.example.myapplication.libads.consent.GoogleMobileAdsConsentManager
 import com.example.myapplication.libads.helper.CollapsiblePositionType
 import com.example.myapplication.libads.interfaces.OnAdmobLoadListener
@@ -37,6 +39,13 @@ class SplashActivity : BaseActivity<ActivitySplashBinding>() {
 
     private val TAG = "TAG_SplashActivity"
     private var adsInterSplash: InterstitialAds? = null
+    private var billingSplashDispatched = false
+
+    private val billingReadyListener = object : BillingClientConnectionListener {
+        override fun onConnected(status: Boolean, billingResponseCode: Int) {
+            dispatchBillingSplashReady()
+        }
+    }
 
     override fun provideViewBinding(): ActivitySplashBinding {
         return ActivitySplashBinding.inflate(layoutInflater)
@@ -45,8 +54,36 @@ class SplashActivity : BaseActivity<ActivitySplashBinding>() {
     override fun initViews() {
         super.initViews()
         setFullScreen()
+
+        val iap = IapFactory.getInstance()
+        if (iap.isBillingClientReady()) {
+            dispatchBillingSplashReady()
+        } else {
+            iap.registerBillingClientConnectionListener(billingReadyListener)
+            viewBinding.root.postDelayed({ dispatchBillingSplashReady() }, 2_500L)
+        }
+
         viewBinding.layoutNativeFSTimer.btnCloseOnb.setOnClickListener {
             gotoMainScreen()
+        }
+    }
+
+    private fun dispatchBillingSplashReady() {
+        if (billingSplashDispatched) return
+        billingSplashDispatched = true
+        IapFactory.getInstance().unregisterBillingClientConnectionListener(billingReadyListener)
+        runOnUiThread { checkAndLoadAds() }
+    }
+
+    override fun onDestroy() {
+        IapFactory.getInstance().unregisterBillingClientConnectionListener(billingReadyListener)
+        super.onDestroy()
+    }
+
+    private fun checkAndLoadAds() {
+        if (isPro) {
+            delayGotoMain()
+            return
         }
 
         if (GoogleMobileAdsConsentManager.getInstance(this).canRequestAds()) {
@@ -199,8 +236,14 @@ class SplashActivity : BaseActivity<ActivitySplashBinding>() {
 
 
     private fun gotoMainScreen() {
-        LanguageActivity.start(this, true)
-        finish()
+        if (isCheckOpenApp){
+            LanguageActivity.start(this, true)
+            finish()
+        }else{
+            MainActivity.start(this)
+            finish()
+        }
+
     }
 
 }

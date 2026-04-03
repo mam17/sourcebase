@@ -22,6 +22,7 @@ class AppOpenAdsUtil(
     private var isLoading = false
 
     fun load(activity: Activity, callback: OnAdmobLoadListener? = null) {
+        if (com.example.myapplication.utils.SpManager.getInstance(activity).isPro()) return
         if (!isEnable || !FirebaseConfigManager.instance().isEnableAllAds) {
             callback?.onError("Ad disabled for placement: $adPlacement")
             return
@@ -61,6 +62,7 @@ class AppOpenAdsUtil(
     }
 
     fun showIfAvailable(activity: Activity) {
+        if (com.example.myapplication.utils.SpManager.getInstance(activity).isPro()) return
         if (!isEnable || !FirebaseConfigManager.instance().isEnableAllAds) return
         if (checkOtherAdsShowing()) {
             Log.d(TAG, "Another ad is showing, skip AppOpen")

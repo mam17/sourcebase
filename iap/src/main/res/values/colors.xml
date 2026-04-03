@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="iap_white">#ffffffff</color>
+    <color name="iap_accent">#2152FF</color>
+    <color name="iap_status_bar">#00FF00</color>
+</resources>

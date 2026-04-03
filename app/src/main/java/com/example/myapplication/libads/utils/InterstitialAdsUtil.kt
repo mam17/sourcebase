@@ -33,6 +33,7 @@ class InterstitialAdsUtil(
     private var dialogLoading: DialogLoadingAds? = null
 
     fun load(callback: OnAdmobLoadListener? = null) {
+        if (com.example.myapplication.utils.SpManager.getInstance(context).isPro()) return
         if (!isEnable || !FirebaseConfigManager.instance().isEnableAllAds) return
 
         val currentTime = System.currentTimeMillis()
@@ -83,6 +84,12 @@ class InterstitialAdsUtil(
     }
 
     fun show(activity: Activity, listener: OnAdmobShowListener, autoLoadAndShow: Boolean = false) {
+        if (com.example.myapplication.utils.SpManager.getInstance(context).isPro()) {
+            listener.onShow()
+            listener.onClosed()
+            return
+        }
+
         if (!isEnable || !FirebaseConfigManager.instance().isEnableAllAds) {
             listener.onError("Ad disabled")
             return

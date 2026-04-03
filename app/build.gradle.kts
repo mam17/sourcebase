@@ -97,6 +97,7 @@ kapt {
     }
 }
 dependencies {
+    implementation(project(":iap"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -190,4 +191,5 @@ dependencies {
     implementation("com.appsflyer:af-android-sdk:6.17.0")
     implementation("com.android.installreferrer:installreferrer:2.2")
 
+    // billing-ktx: transitive từ :iap
 }
